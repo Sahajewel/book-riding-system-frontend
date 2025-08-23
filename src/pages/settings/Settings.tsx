@@ -110,11 +110,13 @@ export default function Settings() {
 
   return (
     <div className="container mx-auto py-6 flex flex-col gap-6">
-       
+        <Navbar></Navbar>
+        <h1>Setting</h1>
       {/* Profile Card */}
       <Card>
         <CardHeader>
-         
+          <CardTitle>Profile Settings</CardTitle>
+          <CardDescription>Edit your profile info and password</CardDescription>
         </CardHeader>
         <CardContent className="flex justify-center ">
           <form
@@ -141,8 +143,59 @@ export default function Settings() {
       </Card>
 
       {/* Emergency Contacts Card */}
-   
-    
+      <Card>
+        <CardHeader>
+          <CardTitle>Emergency Contacts</CardTitle>
+          <CardDescription>
+            Add trusted contacts to notify in case of emergency
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="flex flex-col gap-4">
+          {/* Add new contact */}
+          <div className="flex gap-2">
+            <Input
+              placeholder="Name"
+              value={newContact.name}
+              onChange={(e) =>
+                setNewContact({ ...newContact, name: e.target.value })
+              }
+            />
+            <Input
+              placeholder="Phone"
+              value={newContact.phone}
+              onChange={(e) =>
+                setNewContact({ ...newContact, phone: e.target.value })
+              }
+            />
+            <Button type="button" onClick={addContact}>
+              Add
+            </Button>
+          </div>
+
+          {/* List contacts */}
+          <ul className="flex flex-col gap-2">
+            {contacts.map((c) => (
+              <li
+                key={c.id}
+                className="flex justify-between items-center border p-2 rounded"
+              >
+                <span>
+                  {c.name} - {c.phone}
+                </span>
+                <Button
+                  variant="destructive"
+                  size="sm"
+                  onClick={() => removeContact(c.id)}
+                >
+                  Remove
+                </Button>
+              </li>
+            ))}
+          </ul>
+        </CardContent>
+      </Card>
+ 
+      <Footer></Footer>
     </div>
   );
 }

@@ -1,9 +1,15 @@
 import { useCancelRideMutation, useGetMyRidesQuery } from "@/redux/features/rider/rider.api";
 import type { IRide } from "@/types/ride.interface";
 import { toast } from "sonner";
+import { SOSButton } from "../sosButton/SosButton";
 
+ const mockContacts = [
+    { name: "Boudi", phone: "819012345678", email: "boudi@example.com" },
+    { name: "Mejda", phone: "818098765432", email: "mejda@example.com" },
+  ];
 const MyRides = () => {
-
+   const isRideActive = true;
+     <SOSButton contacts={mockContacts} activeRide={isRideActive}></SOSButton>
   const { data: rides, isLoading } = useGetMyRidesQuery();
   const [cancelRide] = useCancelRideMutation();
 

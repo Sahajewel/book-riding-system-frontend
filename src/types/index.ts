@@ -1,6 +1,6 @@
 import type { ComponentType } from "react";
 
-export type {ISendOtp, ILogin, IVerifyOtp} from "./auth.types";
+// export type {ISendOtp, ILoginPayload, IRe} from "./auth.types";
 export type TRole =  "ADMIN" | "RIDER" | "DRIVER" 
 export interface ISidebarItem {
   title: string,

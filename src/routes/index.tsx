@@ -15,6 +15,7 @@ import { RiderSideItems } from "@/components/RiderSidebarItems";
 import Features from "@/pages/features/Features";
 import Contact from "@/pages/contact/Contact";
 import FAQ from "@/pages/faq/Faq";
+import Settings from "@/pages/settings/Settings";
 
 export const router = createBrowserRouter([
   {
@@ -93,5 +94,9 @@ export const router = createBrowserRouter([
   {
     Component: RegisterPage,
     path: "/register",
+  },
+  {
+    Component: Settings,
+    path: "/settings",
   },
 ]);

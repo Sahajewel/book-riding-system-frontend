@@ -1,58 +1,55 @@
-import Logo from "@/assets/icon/Logo"
-import { Button } from "@/components/ui/button"
+// src/components/Navbar.tsx
+import Logo from "@/assets/icon/Logo";
+import { Button } from "@/components/ui/button";
 import {
   NavigationMenu,
   NavigationMenuItem,
   NavigationMenuLink,
   NavigationMenuList,
-} from "@/components/ui/navigation-menu"
+} from "@/components/ui/navigation-menu";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { ModeToggle } from "@/provider/Mode.toggle";
+// import { role } from "@/constants/role";
+import { authApi, useLogoutMutation, useUserInfoQuery } from "@/redux/features/auth/auth.api";
+import { useAppDispatch } from "@/redux/hook";
+import { Link } from "react-router";
 import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover"
-import { role } from "@/constants/role"
-import { ModeToggle } from "@/provider/Mode.toggle"
-// import { role } from "@/constants/role"
-import {   authApi, useLogoutMutation, useUserInfoQuery,  } from "@/redux/features/auth/auth.api"
-import { useAppDispatch } from "@/redux/hook"
-import { Link } from "react-router"
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
-// Navigation links array to be used in both desktop and mobile menus
 const navigationLinks = [
-  { href: "/", label: "Home", active: true, role: "PUBLIC" },
+  { href: "/", label: "Home", role: "PUBLIC" },
   { href: "/about", label: "About", role: "PUBLIC" },
   { href: "/features", label: "Features", role: "PUBLIC" },
   { href: "/contact", label: "Contact", role: "PUBLIC" },
   { href: "/faq", label: "Faq", role: "PUBLIC" },
-  { href: "/admin", label: "Dashboard", role: role.admin},
-  { href: "/driver", label: "Dashboard", role: role.driver },
-  { href: "/rider", label: "Dashboard", role: role.rider },
-]
+  // { href: "/admin", label: "Dashboard", role: role.admin },
+  // { href: "/driver", label: "Dashboard", role: role.driver },
+  // { href: "/rider", label: "Dashboard", role: role.rider },
+];
 
 export default function Navbar() {
-   const {data} = useUserInfoQuery(undefined);
-   console.log(data)
-   const [logout] = useLogoutMutation();
-     const dispatch = useAppDispatch();
-   const handleLogout = async()=>{
-  await logout(undefined).unwrap();
-  dispatch(authApi.util.resetApiState());
-   }
-   
+  const { data } = useUserInfoQuery(undefined);
+  const [logout] = useLogoutMutation();
+  const dispatch = useAppDispatch();
+
+  const handleLogout = async () => {
+    await logout(undefined).unwrap();
+    dispatch(authApi.util.resetApiState());
+  };
+
   return (
-    <header className="border-b px-4  container mx-auto">
+    <header className="border-b px-4 container mx-auto">
       <div className="flex h-16 items-center justify-between gap-4">
         {/* Left side */}
         <div className="flex items-center gap-2">
-          {/* Mobile menu trigger */}
+          {/* Mobile menu */}
           <Popover>
             <PopoverTrigger asChild>
-              <Button
-                className="group size-8 md:hidden"
-                variant="ghost"
-                size="icon"
-              >
+              <Button className="group size-8 md:hidden" variant="ghost" size="icon">
                 <svg
                   className="pointer-events-none"
                   width={16}
@@ -85,12 +82,8 @@ export default function Navbar() {
                 <NavigationMenuList className="flex-col items-start gap-0 md:gap-2">
                   {navigationLinks.map((link, index) => (
                     <NavigationMenuItem key={index} className="w-full">
-                      <NavigationMenuLink
-                       asChild
-                        className="py-1.5"
-                       
-                      >
-                       <Link to={link.href}> {link.label}</Link>
+                      <NavigationMenuLink asChild className="py-1.5">
+                        <Link to={link.href}>{link.label}</Link>
                       </NavigationMenuLink>
                     </NavigationMenuItem>
                   ))}
@@ -98,53 +91,64 @@ export default function Navbar() {
               </NavigationMenu>
             </PopoverContent>
           </Popover>
-          {/* Main nav */}
+
+          {/* Logo and Desktop Menu */}
           <div className="flex items-center gap-6">
-           
-              <Link to="/" className="text-primary hover:text-primary/90"><Logo /></Link>
-            
-            {/* Navigation menu */}
+            <Link to="/" className="text-primary hover:text-primary/90">
+              <Logo />
+            </Link>
             <NavigationMenu className="max-md:hidden">
               <NavigationMenuList className="gap-2">
-                {navigationLinks.map((link, index) => (
-                <div key={index}>
-                {link.role==="PUBLIC" &&  <NavigationMenuItem key={index}>
-                    <NavigationMenuLink
-                    asChild
-                      className="text-muted-foreground hover:text-primary py-1.5 font-medium"
-                    >
-                     <Link to={link.href}> {link.label}</Link>
-                    </NavigationMenuLink>
-                  </NavigationMenuItem>}
-                  </div>
-                ))}
-                {navigationLinks.map((link, index) => (
-                <div key={index}>
-                {link.role===data?.data?.role &&  <NavigationMenuItem key={index}>
-                    <NavigationMenuLink
-                    asChild
-                      className="text-muted-foreground hover:text-primary py-1.5 font-medium"
-                    >
-                     <Link to={link.href}> {link.label}</Link>
-                    </NavigationMenuLink>
-                  </NavigationMenuItem>}
-                  </div>
-                ))}
+                {navigationLinks.map((link, index) =>
+                  link.role === "PUBLIC" ? (
+                    <NavigationMenuItem key={index}>
+                      <NavigationMenuLink asChild className="text-muted-foreground hover:text-primary py-1.5 font-medium">
+                        <Link to={link.href}>{link.label}</Link>
+                      </NavigationMenuLink>
+                    </NavigationMenuItem>
+                  ) : null
+                )}
+                {navigationLinks.map((link, index) =>
+                  link.role === data?.data?.role ? (
+                    <NavigationMenuItem key={index}>
+                      <NavigationMenuLink asChild className="text-muted-foreground hover:text-primary py-1.5 font-medium">
+                        <Link to={link.href}>{link.label}</Link>
+                      </NavigationMenuLink>
+                    </NavigationMenuItem>
+                  ) : null
+                )}
               </NavigationMenuList>
             </NavigationMenu>
           </div>
         </div>
-        {/* Right side */}
+
+        {/* Right side: ModeToggle + User Dropdown */}
         <div className="flex items-center gap-2">
-           <ModeToggle></ModeToggle>
-         {data?.data?.email &&  <Button  variant="outline" size="sm" className="text-sm" onClick={handleLogout}>
-           Logout
-          </Button>}
-         {!data?.data?.email &&  <Button asChild variant="ghost" size="sm" className="text-sm">
-           <Link to="/login">Login</Link>
-          </Button>}
+          <ModeToggle />
+          {data?.data?.email ? (
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" size="sm">
+                  {data.data.name}
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem asChild>
+                  <Link to={`/${data.data.role.toLowerCase()}`}>Dashboard</Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <Link to="/settings">Settings</Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={handleLogout}>Logout</DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          ) : (
+            <Button asChild variant="ghost" size="sm">
+              <Link to="/login">Login</Link>
+            </Button>
+          )}
         </div>
       </div>
     </header>
-  )
+  );
 }
