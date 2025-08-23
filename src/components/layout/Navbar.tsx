@@ -22,6 +22,9 @@ import { Link } from "react-router"
 const navigationLinks = [
   { href: "/", label: "Home", active: true, role: "PUBLIC" },
   { href: "/about", label: "About", role: "PUBLIC" },
+  { href: "/features", label: "Features", role: "PUBLIC" },
+  { href: "/contact", label: "Contact", role: "PUBLIC" },
+  { href: "/faq", label: "Faq", role: "PUBLIC" },
   { href: "/admin", label: "Dashboard", role: role.admin},
   { href: "/driver", label: "Dashboard", role: role.driver },
   { href: "/rider", label: "Dashboard", role: role.rider },
