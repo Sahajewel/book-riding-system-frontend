@@ -10,3 +10,10 @@ export interface ISidebarItem {
     component: ComponentType
   }[],
 }
+// src/types/response.ts
+// export type ApiResponse<T> = {
+//   success: boolean;
+//   statusCode: number;
+//   message: string;
+//   data: T;
+// };

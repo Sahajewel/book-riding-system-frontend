@@ -37,11 +37,11 @@ export const router = createBrowserRouter([
       ...generateRoutes(adminSideItems),
     ],
   },
-  {
+ {
   Component: withAuth(DashboardLayout, role.driver as TRole),
   path: "/driver",
   children: [
-    { index: true, element: <Navigate to="/driver/bookings"></Navigate> },
+    { index: true, element: <Navigate to="/driver/availability" /> }, 
     ...generateRoutes(DriverSideItems.map(item => ({
       ...item,
       items: item.items.map(subItem => ({
@@ -51,20 +51,22 @@ export const router = createBrowserRouter([
     }))),
   ],
 },
+
 {
   Component: withAuth(DashboardLayout, role.rider as TRole),
   path: "/rider",
   children: [
-    { index: true, element: <Navigate to="/rider/bookings"></Navigate> },
+    { index: true, element: <Navigate to="/rider/bookings" /> },
     ...generateRoutes(RiderSideItems.map(item => ({
       ...item,
       items: item.items.map(subItem => ({
         ...subItem,
-        url: subItem.url.replace("/user/", "/rider/")
+        url: subItem.url.replace("/user/", "/rider/") // optional replacement
       }))
     }))),
   ],
 },
+
     {
     Component: LoginPage,
     path: "/login",

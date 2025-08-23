@@ -1,8 +1,10 @@
-import type { ISidebarItem } from "@/types"
+import type { ISidebarItem } from "@/types";
 
-export const generateRoutes = (sidebarItems: ISidebarItem[])=>{
-    return sidebarItems.flatMap((section)=>section.items.map((route)=>({
-       path:route.url,
-       Component: route.component
-    })))
-}
+export const generateRoutes = (sidebarItems: ISidebarItem[]) => {
+  return sidebarItems.flatMap(section =>
+    section.items.map(route => ({
+      path: route.url,
+      Component: route.component, // directly use, no extra `const Component`
+    }))
+  );
+};
