@@ -9,13 +9,10 @@ import {
   Card,
   CardContent,
   CardHeader,
-  CardTitle,
-  CardDescription,
 } from "@/components/ui/card";
 import { toast } from "sonner";
 import { useUpdateProfileMutation, useUserInfoQuery } from "@/redux/features/auth/auth.api";
-import Navbar from "@/components/layout/Navbar";
-import Footer from "@/components/layout/Footer";
+
 
 
 // Zod schema for profile update
@@ -103,10 +100,7 @@ export default function Settings() {
     toast.success("Emergency contact added");
   };
 
-  const removeContact = (id: number) => {
-    setContacts((prev) => prev.filter((c) => c.id !== id));
-    toast.success("Contact removed");
-  };
+  
 
   return (
     <div className="container mx-auto py-6 flex flex-col gap-6">
