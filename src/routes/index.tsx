@@ -16,6 +16,9 @@ import Features from "@/pages/features/Features";
 import Contact from "@/pages/contact/Contact";
 import FAQ from "@/pages/faq/Faq";
 import Settings from "@/pages/settings/Settings";
+import UpdateRides from "@/pages/driver/UpdateRide";
+import PrivacyPolicy from "@/pages/PrivacyPolicy";
+import Terms from "@/pages/Terms";
 
 export const router = createBrowserRouter([
   {
@@ -41,6 +44,14 @@ export const router = createBrowserRouter([
       {
         Component: FAQ,
         path: "/faq",
+      },
+      {
+        Component: PrivacyPolicy,
+        path: "/privacy-policy",
+      },
+      {
+        Component: Terms,
+        path: "/terms",
       },
     ],
   },
@@ -98,5 +109,9 @@ export const router = createBrowserRouter([
   {
     Component: Settings,
     path: "/settings",
+  },
+  {
+    Component: UpdateRides,
+    path: "/update-ride",
   },
 ]);

@@ -85,13 +85,60 @@ export const adminApi = baseApi.injectEndpoints({
     }),
 
     // 🔹 Get All Rides (admin er jonno backend e filter add korte hobe)
-    getAllRides: builder.query({
+    // src/redux/admin/admin.api.ts
+getAllRides: builder.query({
+  query: (params) => ({
+    url: "/ride",
+    method: "GET",
+    params: params, // query parameters পাঠানোর জন্য
+  }),
+  providesTags: ["Ride"],
+}),
+
+    getRideStats: builder.query({
       query: () => ({
-        url: "/ride", // 🚨 backend e ekta /ride GET admin specific korte hobe
+        url: "/ride/ride-stats",
         method: "GET",
       }),
-      providesTags: ["Ride"],
+      providesTags: ["Analytics"],
     }),
+ getRevenueData: builder.query({
+      query: () => ({
+        url: "/ride/revenue",
+        method: "GET",
+      }),
+      providesTags: ["Analytics"],
+    }),
+
+    // 🔹 Driver Activity
+    getDriverActivity: builder.query({
+      query: () => ({
+        url: "/ride/driver-activity",
+        method: "GET",
+      }),
+      providesTags: ["Analytics"],
+    }),
+
+    // 🔹 Platform Analytics
+    getPlatformAnalytics: builder.query({
+      query: () => ({
+        url: "/ride/platform",
+        method: "GET",
+      }),
+      providesTags: ["Analytics"],
+    }),
+
+    // 🔹 Hourly Trends
+    getRideTrendsByHour: builder.query({
+      query: () => ({
+        url: "/ride/hourly-trends",
+        method: "GET",
+      }),
+      providesTags: ["Analytics"],
+    }),
+
+
+
   }),
 });
 
@@ -106,4 +153,9 @@ export const {
   useGetDriversQuery,
   useGetRidersQuery,
   useGetAllRidesQuery,
+ useGetRideStatsQuery,
+  useGetRevenueDataQuery,
+  useGetDriverActivityQuery,
+  useGetPlatformAnalyticsQuery,
+  useGetRideTrendsByHourQuery,
 } = adminApi;

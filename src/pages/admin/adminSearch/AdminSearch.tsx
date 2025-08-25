@@ -1,7 +1,8 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
-/* eslint-disable @typescript-eslint/no-explicit-any */
 // src/pages/admin/UserManagement.tsx
-import { useState } from "react";
+import React, { useState } from 'react';
+
+
+import type { FilterParams } from '@/types/filter';
 import { 
   useBlockUserMutation, 
   useDeleteUserMutation, 
@@ -10,7 +11,6 @@ import {
 } from "@/redux/admin/admin.api";
 import type { IUser } from "@/types/user.interface";
 import {
-  Search,
   MoreVertical,
   User,
   Mail,
@@ -18,12 +18,8 @@ import {
   UserCheck,
   UserX,
   Trash2,
-  Eye,
-  Edit,
-  Loader2,
-  ChevronDown,
-  ChevronUp,
-  RefreshCw
+  RefreshCw,
+  Loader2
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -39,58 +35,90 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
+import AdminSearchFilter from './AdminSearchFilter';
+import { usersFilterConfig } from '@/config/filterConfig';
 
-export default function UserManagement() {
+const AdminSearch: React.FC = () => {
+  // RTK Query hooks
   const { data: usersResponse, isLoading, refetch } = useGetUsersQuery(undefined);
   const [blockUser] = useBlockUserMutation();
   const [unblockUser] = useUnblockUserMutation();
   const [deleteUser] = useDeleteUserMutation();
   
-  const [searchTerm, setSearchTerm] = useState("");
-  const [statusFilter, setStatusFilter] = useState<"all" | "active" | "blocked">("all");
-  const [roleFilter, setRoleFilter] = useState<string>("all");
-  const [sortField, setSortField] = useState<"name" | "email" | "role">("name");
-  const [sortDirection, setSortDirection] = useState<"asc" | "desc">("asc");
+  // Filter state
+  const [filterParams, setFilterParams] = useState<FilterParams>({
+    search: '',
+    sortBy: 'createdAt',
+    sortOrder: 'desc',
+    filters: {}
+  });
+  
+  // UI state
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [selectedUser, setSelectedUser] = useState<IUser | null>(null);
 
   const users = usersResponse?.data?.data || [];
 
-  // Filter and sort users
+  // Apply filters from AdminSearchFilter
   const filteredUsers = users
     .filter((user: IUser) => {
-      const matchesSearch = user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                           user.email.toLowerCase().includes(searchTerm.toLowerCase());
-      const matchesStatus = statusFilter === "all" || 
-                           (statusFilter === "active" && !user.isBlocked) ||
-                           (statusFilter === "blocked" && user.isBlocked);
-      const matchesRole = roleFilter === "all" || user.role === roleFilter;
+      // Search filter
+      const matchesSearch = !filterParams.search || 
+        user.name.toLowerCase().includes(filterParams.search.toLowerCase()) ||
+        user.email.toLowerCase().includes(filterParams.search.toLowerCase());
       
-      return matchesSearch && matchesStatus && matchesRole;
-    })
-    .sort((a: IUser, b: IUser) => {
-      let aValue = a[sortField];
-      let bValue = b[sortField];
+      // Role filter
+      const roleFilter = filterParams.filters.role;
+      const matchesRole = !roleFilter || user.role === roleFilter;
       
-      if (sortField === "name") {
-        aValue = a.name.toLowerCase();
-        bValue = b.name.toLowerCase();
+      // Status filter
+      const statusFilter = filterParams.filters.status;
+      const matchesStatus = !statusFilter || 
+        (Array.isArray(statusFilter) 
+          ? statusFilter.includes(user.isBlocked ? 'blocked' : 'active')
+          : statusFilter === (user.isBlocked ? 'blocked' : 'active'));
+      
+      // Date filter (example - you'll need to adjust based on your user model)
+      const dateFilter = filterParams.filters.createdAt;
+      let matchesDate = true;
+      if (dateFilter && user.createdAt) {
+        const userDate = new Date(user.createdAt);
+        if (dateFilter.from) matchesDate = matchesDate && userDate >= new Date(dateFilter.from);
+        if (dateFilter.to) matchesDate = matchesDate && userDate <= new Date(dateFilter.to);
       }
       
-      if (aValue < bValue) return sortDirection === "asc" ? -1 : 1;
-      if (aValue > bValue) return sortDirection === "asc" ? 1 : -1;
-      return 0;
+      return matchesSearch && matchesRole && matchesStatus && matchesDate;
+    })
+    .sort((a: IUser, b: IUser) => {
+      // Apply sorting from filterParams
+      const field = filterParams.sortBy;
+      const direction = filterParams.sortOrder === 'asc' ? 1 : -1;
+      
+      let aValue: any = a;
+      let bValue: any = b;
+      
+      // Handle nested properties if needed
+      if (field.includes('.')) {
+        const parts = field.split('.');
+        aValue = parts.reduce((obj, part) => obj && obj[part], a);
+        bValue = parts.reduce((obj, part) => obj && obj[part], b);
+      } else {
+        aValue = a[field as keyof IUser];
+        bValue = b[field as keyof IUser];
+      }
+      
+      if (typeof aValue === 'string') {
+        return aValue.localeCompare(bValue) * direction;
+      }
+      
+      return (aValue - bValue) * direction;
     });
 
-  const handleSort = (field: "name" | "email" | "role") => {
-    if (sortField === field) {
-      setSortDirection(sortDirection === "asc" ? "desc" : "asc");
-    } else {
-      setSortField(field);
-      setSortDirection("asc");
-    }
+  const handleFilterChange = (filters: FilterParams) => {
+    setFilterParams(filters);
+    // Here you would typically make an API call with the filter parameters
+    console.log('Filters changed:', filters);
   };
 
   const handleBlockUser = async (userId: string) => {
@@ -128,9 +156,6 @@ export default function UserManagement() {
   };
 
   const getRoleBadge = (role: string) => {
-    // Convert backend role values to frontend display values
-    const normalizedRole = role.toUpperCase();
-    
     const roleConfig = {
       'ADMIN': { variant: "destructive" as const, text: "Admin" },
       'RIDER': { variant: "secondary" as const, text: "Rider" },
@@ -138,7 +163,7 @@ export default function UserManagement() {
       'USER': { variant: "outline" as const, text: "User" }
     };
     
-    const config = roleConfig[normalizedRole as keyof typeof roleConfig] || { 
+    const config = roleConfig[role as keyof typeof roleConfig] || { 
       variant: "outline" as const, 
       text: role 
     };
@@ -158,7 +183,7 @@ export default function UserManagement() {
     <div className="container mx-auto p-6 space-y-6">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">User Management</h1>
+          <h1 className="text-3xl font-bold tracking-tight">Search & Filter</h1>
           <p className="text-muted-foreground mt-1">
             Manage all users and their permissions
           </p>
@@ -215,47 +240,12 @@ export default function UserManagement() {
         </Card>
       </div>
 
-      {/* Filters and Search */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Filters</CardTitle>
-          <CardDescription>Filter users by different criteria</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="flex flex-col sm:flex-row gap-4">
-            <div className="relative flex-1">
-              <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-              <Input
-                type="search"
-                placeholder="Search users..."
-                className="pl-8"
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-              />
-            </div>
-            <select
-              className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
-              value={statusFilter}
-              onChange={(e) => setStatusFilter(e.target.value as any)}
-            >
-              <option value="all">All Status</option>
-              <option value="active">Active</option>
-              <option value="blocked">Blocked</option>
-            </select>
-            <select
-              className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
-              value={roleFilter}
-              onChange={(e) => setRoleFilter(e.target.value)}
-            >
-              <option value="all">All Roles</option>
-              <option value="ADMIN">Admin</option>
-              <option value="DRIVER">Driver</option>
-              <option value="RIDER">Rider</option>
-              <option value="USER">User</option>
-            </select>
-          </div>
-        </CardContent>
-      </Card>
+      {/* Admin Search Filter Component */}
+      <AdminSearchFilter
+        resourceType="users"
+        onFilterChange={handleFilterChange}
+        filterConfig={usersFilterConfig}
+      />
 
       {/* Users Table */}
       <Card>
@@ -270,40 +260,17 @@ export default function UserManagement() {
             <table className="w-full border-collapse">
               <thead>
                 <tr className="border-b">
-                  <th 
-                    className="h-12 px-4 text-left align-middle font-medium cursor-pointer hover:bg-accent"
-                    onClick={() => handleSort("name")}
-                  >
-                    <div className="flex items-center gap-1">
-                      User
-                      {sortField === "name" && (
-                        sortDirection === "asc" ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />
-                      )}
-                    </div>
+                  <th className="h-12 px-4 text-left align-middle font-medium">
+                    User
                   </th>
-                  <th 
-                    className="h-12 px-4 text-left align-middle font-medium cursor-pointer hover:bg-accent"
-                    onClick={() => handleSort("email")}
-                  >
-                    <div className="flex items-center gap-1">
-                      Email
-                      {sortField === "email" && (
-                        sortDirection === "asc" ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />
-                      )}
-                    </div>
+                  <th className="h-12 px-4 text-left align-middle font-medium">
+                    Email
                   </th>
-                  <th 
-                    className="h-12 px-4 text-left align-middle font-medium cursor-pointer hover:bg-accent"
-                    onClick={() => handleSort("role")}
-                  >
-                    <div className="flex items-center gap-1">
-                      Role
-                      {sortField === "role" && (
-                        sortDirection === "asc" ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />
-                      )}
-                    </div>
+                  <th className="h-12 px-4 text-left align-middle font-medium">
+                    Role
                   </th>
                   <th className="h-12 px-4 text-left align-middle font-medium">Status</th>
+                  <th className="h-12 px-4 text-left align-middle font-medium">Created</th>
                   <th className="h-12 px-4 text-right align-middle font-medium">Actions</th>
                 </tr>
               </thead>
@@ -341,6 +308,9 @@ export default function UserManagement() {
                         {user.isBlocked ? "Blocked" : "Active"}
                       </span>
                     </td>
+                    <td className="p-4 align-middle">
+                      {user.createdAt ? new Date(user.createdAt).toLocaleDateString() : 'N/A'}
+                    </td>
                     <td className="p-4 align-middle text-right">
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
@@ -349,14 +319,6 @@ export default function UserManagement() {
                           </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
-                          {/* <DropdownMenuItem>
-                            <Eye className="h-4 w-4 mr-2" />
-                            View Details
-                          </DropdownMenuItem> */}
-                          {/* <DropdownMenuItem>
-                            <Edit className="h-4 w-4 mr-2" />
-                            Edit User
-                          </DropdownMenuItem> */}
                           {user.isBlocked ? (
                             <DropdownMenuItem onClick={() => handleUnblockUser(user._id)}>
                               <UserCheck className="h-4 w-4 mr-2" />
@@ -437,6 +399,10 @@ export default function UserManagement() {
           </div>
         </div>
       )}
+
+    
     </div>
   );
-}
+};
+
+export default AdminSearch;

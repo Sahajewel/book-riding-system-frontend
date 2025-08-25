@@ -1,29 +1,23 @@
-// src/types/ride.interface.ts (frontend-friendly)
+// src/types/ride.interface.ts
 export const RideStatus = {
-  REQUESTED: "requested",
+  PENDING: "pending",
   ACCEPTED: "accepted",
-  REJECTED: "rejected",
   ONGOING: "ongoing",
   COMPLETED: "completed",
   CANCELLED: "cancelled",
-  PENDING: "pending",
+  REJECTED: "rejected",
 } as const;
 
 export type RideStatus = (typeof RideStatus)[keyof typeof RideStatus];
 
-// export interface IRide {
-//   _id: string;
-//   rider: string;
-//   driver?: string;
-//   pickupLocation: string;
-//   dropoffLocation: string;
-//   status: RideStatus;
-//   fare?: number;
-//   requestedAt: string;
-//   pickUpAt?: string;
-//   inTransitAt?: string;
-//   completedAt?: string;
-// }
+
+// Driver is only allowed to update to these statuses
+export type UpdatableRideStatus =
+  | typeof RideStatus.ACCEPTED
+  | typeof RideStatus.ONGOING
+  | typeof RideStatus.COMPLETED
+  | typeof RideStatus.CANCELLED;
+
 export interface IRide {
   _id: string;
   rider: { _id: string; name: string };
@@ -36,5 +30,5 @@ export interface IRide {
   pickUpAt?: string;
   inTransitAt?: string;
   completedAt?: string;
+  createdAt: string
 }
-

@@ -24,8 +24,9 @@ export default function Footer() {
           <h5 className="font-semibold mb-3">Resources</h5>
           <ul className="space-y-2">
             <li><Link to="/faq">FAQ</Link></li>
-            <li><a href="#">Privacy Policy</a></li>
-            <li><a href="#">Terms</a></li>
+            <li><Link to="privacy-policy">Privacy Policy</Link></li>
+            <li><Link to="terms">Terms</Link></li>
+           
           </ul>
         </div>
 

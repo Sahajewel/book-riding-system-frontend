@@ -8,25 +8,38 @@ import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
+  CardDescription,
   CardHeader,
   CardTitle,
-  CardDescription,
+  CardFooter,
 } from "@/components/ui/card";
+import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import { useUpdateProfileMutation, useUserInfoQuery } from "@/redux/features/auth/auth.api";
+import { 
+  User, 
+  Mail, 
+  Lock, 
+  Phone, 
+  Plus, 
+  Trash2, 
+  Shield,
+  Save,
+  Contact
+} from "lucide-react";
+import { Badge } from "lucide-react";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
-
 
 // Zod schema for profile update
 const profileSchema = z
   .object({
-    name: z.string().min(2, "Name too short"),
-    email: z.email("Invalid email"),
-    password: z.string().min(6, "Password too short").optional(),
-    confirmPassword: z.string().optional(),
+    name: z.string().min(2, "Name must be at least 2 characters"),
+    email: z.string().email("Please enter a valid email address"),
+    password: z.string().min(6, "Password must be at least 6 characters").optional().or(z.literal('')),
+    confirmPassword: z.string().optional().or(z.literal('')),
   })
-  .refine((data) => data.password === data.confirmPassword, {
+  .refine((data) => !data.password || data.password === data.confirmPassword, {
     message: "Passwords do not match",
     path: ["confirmPassword"],
   });
@@ -39,22 +52,21 @@ const defaultContacts = [
   { id: 2, name: "Mejda", phone: "+81 80 9876 5432" },
 ];
 
-
 export default function Settings() {
-    
   const { data } = useUserInfoQuery(undefined);
   const [updateProfile, { isLoading }] = useUpdateProfileMutation();
 
   const form = useForm<ProfileForm>({
     resolver: zodResolver(profileSchema),
     defaultValues: {
-      name: data?.data?.name || "",
-      email: data?.data?.email || "",
+      name: "",
+      email: "",
       password: "",
       confirmPassword: "",
     },
   });
- React.useEffect(() => {
+
+  React.useEffect(() => {
     if (data?.data) {
       form.reset({
         name: data.data.name,
@@ -63,11 +75,11 @@ export default function Settings() {
         confirmPassword: "",
       });
     }
-  }, [data]);
+  }, [data, form]);
+
   const onSubmit: SubmitHandler<ProfileForm> = async (values) => {
     if (!data?.data?._id) return;
     try {
-      // Only include password if not empty
       const payload: { name?: string; email?: string; password?: string } = {
         name: values.name,
         email: values.email,
@@ -92,7 +104,7 @@ export default function Settings() {
 
   const addContact = () => {
     if (!newContact.name || !newContact.phone) {
-      toast.error("Fill all fields");
+      toast.error("Please fill all fields");
       return;
     }
     setContacts((prev) => [
@@ -104,98 +116,260 @@ export default function Settings() {
   };
 
   const removeContact = (id: number) => {
-    setContacts((prev) => prev.filter((c) => c.id !== id));
+    setContacts(contacts.filter(contact => contact.id !== id));
     toast.success("Contact removed");
   };
 
   return (
-    <div className="container mx-auto py-6 flex flex-col gap-6">
-        <Navbar></Navbar>
-        <h1>Setting</h1>
-      {/* Profile Card */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Profile Settings</CardTitle>
-          <CardDescription>Edit your profile info and password</CardDescription>
-        </CardHeader>
-        <CardContent className="flex justify-center ">
-          <form
-            onSubmit={form.handleSubmit(onSubmit)}
-            className="flex flex-col gap-4"
-          >
-            <Input {...form.register("name")} placeholder="Name" />
-            <Input {...form.register("email")} placeholder="Email" readOnly />
-            <Input
-              {...form.register("password")}
-              placeholder="New Password"
-              type="password"
-            />
-            <Input
-              {...form.register("confirmPassword")}
-              placeholder="Confirm Password"
-              type="password"
-            />
-            <Button type="submit" disabled={isLoading}>
-              {isLoading ? "Updating..." : "Update Profile"}
-            </Button>
-          </form>
-        </CardContent>
-      </Card>
+   <div>
+    <Navbar></Navbar>
+     <div className="container mx-auto py-8 max-w-4xl space-y-8">
+      <div className="text-center mb-8">
+        <h1 className="text-3xl font-bold text-gray-900">Settings</h1>
+        <p className="text-gray-600 mt-2">Manage your account settings and preferences</p>
+      </div>
 
-      {/* Emergency Contacts Card */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Emergency Contacts</CardTitle>
-          <CardDescription>
-            Add trusted contacts to notify in case of emergency
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="flex flex-col gap-4">
-          {/* Add new contact */}
-          <div className="flex gap-2">
-            <Input
-              placeholder="Name"
-              value={newContact.name}
-              onChange={(e) =>
-                setNewContact({ ...newContact, name: e.target.value })
-              }
-            />
-            <Input
-              placeholder="Phone"
-              value={newContact.phone}
-              onChange={(e) =>
-                setNewContact({ ...newContact, phone: e.target.value })
-              }
-            />
-            <Button type="button" onClick={addContact}>
-              Add
-            </Button>
-          </div>
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        {/* Profile Card */}
+        <Card className="lg:col-span-2">
+          <CardHeader className="pb-4">
+            <div className="flex items-center gap-3">
+              <div className="p-2 bg-blue-100 rounded-full">
+                <User className="h-5 w-5 text-blue-600" />
+              </div>
+              <div>
+                <CardTitle>Profile Information</CardTitle>
+                <CardDescription>
+                  Update your personal information
+                </CardDescription>
+              </div>
+            </div>
+          </CardHeader>
+          <CardContent>
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="space-y-2">
+                  <Label htmlFor="name" className="flex items-center gap-2">
+                    <User className="h-4 w-4" />
+                    Full Name
+                  </Label>
+                  <Input
+                    {...form.register("name")}
+                    placeholder="Enter your name"
+                    className="w-full"
+                  />
+                  {form.formState.errors.name && (
+                    <p className="text-red-500 text-sm">
+                      {form.formState.errors.name.message}
+                    </p>
+                  )}
+                </div>
 
-          {/* List contacts */}
-          <ul className="flex flex-col gap-2">
-            {contacts.map((c) => (
-              <li
-                key={c.id}
-                className="flex justify-between items-center border p-2 rounded"
+                <div className="space-y-2">
+                  <Label htmlFor="email" className="flex items-center gap-2">
+                    <Mail className="h-4 w-4" />
+                    Email Address
+                  </Label>
+                  <Input
+                    {...form.register("email")}
+                    type="email"
+                    placeholder="Enter your email"
+                    className="w-full"
+                    readOnly
+                  />
+                  {form.formState.errors.email && (
+                    <p className="text-red-500 text-sm">
+                      {form.formState.errors.email.message}
+                    </p>
+                  )}
+                </div>
+              </div>
+
+              <div className="pt-4 border-t">
+                <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
+                  <Lock className="h-5 w-5" />
+                  Change Password
+                </h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="space-y-2">
+                    <Label htmlFor="password">New Password</Label>
+                    <Input
+                      {...form.register("password")}
+                      type="password"
+                      placeholder="Enter new password"
+                      className="w-full"
+                    />
+                    {form.formState.errors.password && (
+                      <p className="text-red-500 text-sm">
+                        {form.formState.errors.password.message}
+                      </p>
+                    )}
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="confirmPassword">Confirm Password</Label>
+                    <Input
+                      {...form.register("confirmPassword")}
+                      type="password"
+                      placeholder="Confirm new password"
+                      className="w-full"
+                    />
+                    {form.formState.errors.confirmPassword && (
+                      <p className="text-red-500 text-sm">
+                        {form.formState.errors.confirmPassword.message}
+                      </p>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              <Button 
+                type="submit" 
+                disabled={isLoading}
+                className="w-full md:w-auto"
               >
-                <span>
-                  {c.name} - {c.phone}
-                </span>
+                <Save className="h-4 w-4 mr-2" />
+                {isLoading ? "Updating..." : "Update Profile"}
+              </Button>
+            </form>
+          </CardContent>
+        </Card>
+
+        {/* Emergency Contacts Card */}
+        <Card>
+          <CardHeader className="pb-4">
+            <div className="flex items-center gap-3">
+              <div className="p-2 bg-red-100 rounded-full">
+                <Shield className="h-5 w-5 text-red-600" />
+              </div>
+              <div>
+                <CardTitle>Emergency Contacts</CardTitle>
+                <CardDescription>
+                  Your trusted emergency contacts
+                </CardDescription>
+              </div>
+            </div>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            {contacts.map((contact) => (
+              <div
+                key={contact.id}
+                className="flex items-center justify-between p-3 border rounded-lg"
+              >
+                <div className="flex items-center gap-3">
+                  <div className="p-2 bg-gray-100 rounded-full">
+                    <Contact className="h-4 w-4 text-gray-600" />
+                  </div>
+                  <div>
+                    <p className="font-medium">{contact.name}</p>
+                    <p className="text-sm text-gray-600">{contact.phone}</p>
+                  </div>
+                </div>
                 <Button
-                  variant="destructive"
-                  size="sm"
-                  onClick={() => removeContact(c.id)}
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => removeContact(contact.id)}
+                  className="h-8 w-8 text-red-500 hover:text-red-700 hover:bg-red-50"
                 >
-                  Remove
+                  <Trash2 className="h-4 w-4" />
                 </Button>
-              </li>
+              </div>
             ))}
-          </ul>
+
+            <div className="pt-4 border-t">
+              <h4 className="font-medium mb-3 flex items-center gap-2">
+                <Plus className="h-4 w-4" />
+                Add New Contact
+              </h4>
+              <div className="space-y-3">
+                <div className="space-y-2">
+                  <Label>Name</Label>
+                  <Input
+                    value={newContact.name}
+                    onChange={(e) =>
+                      setNewContact({ ...newContact, name: e.target.value })
+                    }
+                    placeholder="Contact name"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label className="flex items-center gap-2">
+                    <Phone className="h-4 w-4" />
+                    Phone Number
+                  </Label>
+                  <Input
+                    value={newContact.phone}
+                    onChange={(e) =>
+                      setNewContact({ ...newContact, phone: e.target.value })
+                    }
+                    placeholder="+81 90 1234 5678"
+                  />
+                </div>
+                <Button
+                  onClick={addContact}
+                  variant="outline"
+                  className="w-full"
+                >
+                  <Plus className="h-4 w-4 mr-2" />
+                  Add Contact
+                </Button>
+              </div>
+            </div>
+          </CardContent>
+          <CardFooter className="bg-gray-50 py-3">
+            <p className="text-xs text-gray-600">
+              These contacts will be notified in case of emergencies
+            </p>
+          </CardFooter>
+        </Card>
+
+        {/* Account Status Card */}
+        <Card>
+          <CardHeader className="pb-4">
+            <CardTitle>Account Status</CardTitle>
+            <CardDescription>
+              Your current account information
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
+              <span className="text-sm font-medium">Account Type</span>
+              <Badge variant="secondary">Premium User</Badge>
+            </div>
+            <div className="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
+              <span className="text-sm font-medium">Member Since</span>
+              <span className="text-sm text-gray-600">January 2024</span>
+            </div>
+            <div className="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
+              <span className="text-sm font-medium">Last Updated</span>
+              <span className="text-sm text-gray-600">Today</span>
+            </div>
+          </CardContent>
+          <CardFooter>
+            <Button variant="outline" className="w-full">
+              View Account Details
+            </Button>
+          </CardFooter>
+        </Card>
+      </div>
+
+      {/* Security Notice */}
+      <Card className="bg-blue-50 border-blue-200">
+        <CardContent className="pt-6">
+          <div className="flex items-start gap-3">
+            <Shield className="h-5 w-5 text-blue-600 mt-0.5" />
+            <div>
+              <h3 className="font-semibold text-blue-900">Security Notice</h3>
+              <p className="text-blue-700 text-sm mt-1">
+                Your information is encrypted and secure. We never share your 
+                personal data with third parties without your consent.
+              </p>
+            </div>
+          </div>
         </CardContent>
       </Card>
- 
-      <Footer></Footer>
     </div>
+    <Footer></Footer>
+   </div>
   );
 }

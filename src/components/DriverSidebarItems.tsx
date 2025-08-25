@@ -1,9 +1,13 @@
-
-import Earnings from "@/pages/driver/Earnings";
-// import DriverDashboard from "@/pages/driver/Driver"; 
-import type { ISidebarItem } from "@/types";
-import Availability from "@/pages/driver/AvailabilityToggle";
+// src/components/DriverSidebarItems.ts
+import DriverAvailability from "@/pages/driver/DriverAvailability";
+import ActiveRide from "@/pages/driver/ActiveRide";
+import EarningsDashboard from "@/pages/driver/EarningDashboard";
+import DriverRideHistory from "@/pages/driver/DriverHistory";
 import RideRequests from "@/pages/driver/RideRequest";
+import type { ISidebarItem } from "@/types";
+// import RiderManagement from "@/pages/admin/RiderManagement";
+// import RiderProfile from "@/pages/rider/Profile";
+import DriverProfile from "@/pages/driver/DriverProfile";
 
 export const DriverSideItems: ISidebarItem[] = [
   {
@@ -12,7 +16,7 @@ export const DriverSideItems: ISidebarItem[] = [
       {
         title: "Availability",
         url: "/driver/availability",
-        component: Availability,
+        component: DriverAvailability,
       },
       {
         title: "Ride Requests",
@@ -20,15 +24,27 @@ export const DriverSideItems: ISidebarItem[] = [
         component: RideRequests,
       },
       {
-        title: "History",
+        title: "Ride History",
         url: "/driver/history",
-        component: RideRequests, 
+        component: DriverRideHistory, 
       },
       {
         title: "Earnings",
         url: "/driver/earnings",
-        component: Earnings,
+        component: EarningsDashboard,
       },
+      {
+        title: "Active Ride",
+        url: "/driver/active-ride",
+        component: ActiveRide,
+      },
+      {
+        title: "Profile Management",
+        url: "/driver/profile",
+        component: DriverProfile,
+      },
+    
     ],
   },
+  
 ];

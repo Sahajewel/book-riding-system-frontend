@@ -5,7 +5,7 @@ import axiosBaseQuery from "./axioxBaseQuery"
 export const baseApi = createApi({
     reducerPath: "baseApi",
     baseQuery: axiosBaseQuery(),
-    tagTypes: ["User", "Driver", "Ride", "Earnings", "Rider" ],
+    tagTypes: ["User", "Driver", "Ride", "Earnings", "Rider", "Analytics" ],
     // baseQuery: fetchBaseQuery({
     //     baseUrl: config.baseUrl,
     //     credentials: "include"

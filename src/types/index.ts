@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import type { ComponentType } from "react";
 
 // export type {ISendOtp, ILoginPayload, IRe} from "./auth.types";
@@ -7,7 +8,7 @@ export interface ISidebarItem {
   items:{
     title: string,
     url: string,
-    component: ComponentType
+    component: ComponentType<any>
   }[],
 }
 // src/types/response.ts
