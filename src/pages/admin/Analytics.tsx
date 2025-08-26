@@ -113,6 +113,7 @@ export default function AnalyticsDashboard() {
   
   const { data: revenueResponse, isLoading: revenueLoading, error: revenueError } = 
     useGetRevenueDataQuery({ days: parseInt(timeRange) });
+    console.log(revenueResponse)
   
   const { data: driverActivityResponse, isLoading: driverLoading, error: driverError } = 
     useGetDriverActivityQuery({ days: parseInt(timeRange) });

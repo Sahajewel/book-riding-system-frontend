@@ -375,7 +375,7 @@ const AdminSearch: React.FC = () => {
             {/* Header */}
             <div className="flex flex-col space-y-2">
               <h2 className="text-lg font-semibold">Are you sure?</h2>
-              <p className="text-sm text-gray-600">
+              <p className="text-sm ">
                 This action cannot be undone. This will permanently delete the user
                 account for {selectedUser?.name} ({selectedUser?.email}).
               </p>
@@ -385,13 +385,13 @@ const AdminSearch: React.FC = () => {
             <div className="flex flex-col-reverse sm:flex-row sm:justify-end sm:space-x-2">
               <button
                 onClick={() => setDeleteDialogOpen(false)}
-                className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 mt-2 sm:mt-0"
+                className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 mt-2 sm:mt-0"
               >
                 Cancel
               </button>
               <button
                 onClick={handleDeleteUser}
-                className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700"
+                className="px-4 py-2 bg-red-600 rounded-md hover:bg-red-700"
               >
                 Delete
               </button>

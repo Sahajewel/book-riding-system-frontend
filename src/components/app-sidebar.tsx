@@ -25,7 +25,7 @@ const data = {
     }
   return (
     <Sidebar {...props}>
-     <Link to="/"><Logo></Logo></Link>
+     <Link className="pl-5 pt-5" to="/"><Logo></Logo></Link>
       <SidebarContent>
         {/* We create a SidebarGroup for each parent. */}
         {data.navMain.map((item) => (

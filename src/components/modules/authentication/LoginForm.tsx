@@ -1,46 +1,61 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { cn } from "@/lib/utils"
 import { Input } from "@/components/ui/input"
-import {  Link, useNavigate } from "react-router"
-import {  useForm, type FieldValues, type SubmitHandler } from "react-hook-form"
+import { Link, useNavigate } from "react-router"
+import { useForm, type FieldValues, type SubmitHandler } from "react-hook-form"
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
 import { Button } from "@/components/ui/button"
 import { toast } from "sonner"
 import { useLoginMutation } from "@/redux/features/auth/auth.api"
-// import config from "@/config"
+import { useState } from "react"
+import { Eye, EyeOff } from "lucide-react"
+import { z } from "zod"
+import { zodResolver } from "@hookform/resolvers/zod"
+
+// Define validation schema
+const loginSchema = z.object({
+  email: z.string().email("Please enter a valid email address"),
+  password: z.string().min(1, "Password is required")
+})
 
 export function LoginForm({
   className,
   ...props
 }: React.ComponentProps<"form">) {
- 
-  const form = useForm();
-  const navigate = useNavigate();
-  const [login] = useLoginMutation();
-  const onSubmit: SubmitHandler<FieldValues> = async(data)=>{
-    console.log(data);
+  const [showPassword, setShowPassword] = useState(false)
+  const navigate = useNavigate()
+  const [login, { isLoading }] = useLoginMutation()
+  
+  const form = useForm({
+    resolver: zodResolver(loginSchema),
+    defaultValues: {
+      email: "",
+      password: ""
+    }
+  })
+
+  const onSubmit: SubmitHandler<FieldValues> = async (data) => {
     try {
-      const res= await login(data).unwrap();
-      if(res.success){
+      const res = await login(data).unwrap()
+      if (res.success) {
         toast.success("Logged in successfully")
         navigate("/")
       }
-      // navigate("/")
-      console.log(res)
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    } catch (error:any) {
+    } catch (error: any) {
       console.log(error)
-       if(error.data.message === "User is not verified"){
-        toast.error("Your account is not verified");
-        navigate("/verify",{state: data.email})
-      }
-      if(error.data.message ==="Password does not match"){
-        toast.error("inavlid credentials")
+      if (error.data?.message === "User is not verified") {
+        toast.error("Your account is not verified")
+        navigate("/verify", { state: data.email })
+      } else if (error.data?.message === "Password does not match") {
+        toast.error("Invalid credentials")
+      } else {
+        toast.error("Login failed. Please try again.")
       }
     }
   }
+
   return (
-   
-     <Form {...form}>
+    <Form {...form}>
       <form
         onSubmit={form.handleSubmit(onSubmit)}
         className={cn("flex flex-col gap-6", className)}
@@ -60,12 +75,18 @@ export function LoginForm({
             <FormItem>
               <FormLabel>Email</FormLabel>
               <FormControl>
-                <Input type="email" placeholder="m@example.com" {...field} />
+                <Input 
+                  type="email" 
+                  placeholder="m@example.com" 
+                  {...field} 
+                  className={form.formState.errors.email && "border-destructive"}
+                />
               </FormControl>
               <FormMessage />
             </FormItem>
           )}
         />
+        
         <FormField
           control={form.control}
           name="password"
@@ -73,7 +94,30 @@ export function LoginForm({
             <FormItem>
               <FormLabel>Password</FormLabel>
               <FormControl>
-                <Input type="password" placeholder="******" {...field} />
+                <div className="relative">
+                  <Input 
+                    type={showPassword ? "text" : "password"} 
+                    placeholder="******" 
+                    {...field} 
+                    className={form.formState.errors.password && "border-destructive pr-10"}
+                  />
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon"
+                    className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
+                    onClick={() => setShowPassword(!showPassword)}
+                  >
+                    {showPassword ? (
+                      <EyeOff className="h-4 w-4" />
+                    ) : (
+                      <Eye className="h-4 w-4" />
+                    )}
+                    <span className="sr-only">
+                      {showPassword ? "Hide password" : "Show password"}
+                    </span>
+                  </Button>
+                </div>
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -81,21 +125,19 @@ export function LoginForm({
         />
 
         <div className="flex flex-col gap-3">
-          <Button type="submit" className="w-full cursor-pointer">
-            Login
+          <Button 
+            type="submit" 
+            className="w-full cursor-pointer"
+            disabled={isLoading}
+          >
+            {isLoading ? "Logging in..." : "Login"}
           </Button>
         </div>
-      {/* <p className="text-center border-b border-gray-300 leading-[0.1em] mt-4 mb-4"> */}
-  {/* <span className="bg-white px-2 text-black">or</span> */}
-{/* </p> */}
-<div>
-{/* <Button onClick={()=>window.open(`${config.baseUrl}/auth/google`)} className="w-full cursor-pointer" variant="outline" type="button" >Continue with google</Button> */}
-</div>
+        
         <div className="text-center text-sm">
-          Don&apos;t have an account? <Link to="/register"> Register </Link>
+          Don&apos;t have an account? <Link to="/register" className="text-primary hover:underline">Register</Link>
         </div>
       </form>
     </Form>
-  
   )
 }

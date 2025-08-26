@@ -1,10 +1,10 @@
 // src/pages/driver/DriverProfile.tsx
 import { useState, useEffect } from "react";
-import { toast } from "react-hot-toast";
 import { 
   useGetDriverProfileQuery, 
   useUpdateDriverProfileMutation 
 } from "@/redux/features/driver/driver.api";
+import { toast } from "sonner";
 
 const DriverProfile = () => {
   const { data: driverProfile, isLoading } = useGetDriverProfileQuery();
@@ -186,7 +186,7 @@ const DriverProfile = () => {
 
         <form onSubmit={handleSubmit} className="p-6 space-y-6">
           {/* Driver Status */}
-          <div className="bg-gray-50 rounded-lg p-4">
+          <div className=" rounded-lg p-4">
             <h3 className="text-lg font-medium text-gray-900 mb-4">Driver Status</h3>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div>
@@ -239,9 +239,9 @@ const DriverProfile = () => {
                   value={formData.name}
                   onChange={handleInputChange}
                   disabled={!isEditing}
-                  className={`block w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 ${
+                  className={`text-black block w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 ${
                     !isEditing 
-                      ? 'bg-gray-100 cursor-not-allowed' 
+                      ? ' cursor-not-allowed' 
                       : errors.name 
                       ? 'border-red-300' 
                       : 'border-gray-300'
@@ -261,7 +261,7 @@ const DriverProfile = () => {
                   value={formData.email}
                   onChange={handleInputChange}
                   disabled={!isEditing}
-                  className={`block w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 ${
+                  className={`text-black block w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 ${
                     !isEditing 
                       ? 'bg-gray-100 cursor-not-allowed' 
                       : errors.email 
@@ -290,7 +290,7 @@ const DriverProfile = () => {
                     value={formData.password}
                     onChange={handleInputChange}
                     placeholder="Leave blank to keep current password"
-                    className={`block w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 ${
+                    className={`text-black block w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 ${
                       errors.password ? 'border-red-300' : 'border-gray-300'
                     }`}
                   />
@@ -308,7 +308,7 @@ const DriverProfile = () => {
                     value={formData.confirmPassword}
                     onChange={handleInputChange}
                     placeholder="Confirm new password"
-                    className={`block w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 ${
+                    className={`text-black block w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 ${
                       errors.confirmPassword ? 'border-red-300' : 'border-gray-300'
                     }`}
                   />
@@ -334,7 +334,7 @@ const DriverProfile = () => {
                   onChange={handleInputChange}
                   disabled={!isEditing}
                   placeholder="e.g., ABC-1234"
-                  className={`block w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 ${
+                  className={`text-black block w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 ${
                     !isEditing 
                       ? 'bg-gray-100 cursor-not-allowed' 
                       : errors.vehicleNumber 
@@ -355,7 +355,7 @@ const DriverProfile = () => {
                   value={formData.vehicleType}
                   onChange={handleInputChange}
                   disabled={!isEditing}
-                  className={`block w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 ${
+                  className={`text-black block w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 ${
                     !isEditing 
                       ? 'bg-gray-100 cursor-not-allowed' 
                       : errors.vehicleType 
@@ -384,7 +384,7 @@ const DriverProfile = () => {
                   onChange={handleInputChange}
                   disabled={!isEditing}
                   placeholder="e.g., DL-123456789"
-                  className={`block w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 ${
+                  className={`text-black block w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 ${
                     !isEditing 
                       ? 'bg-gray-100 cursor-not-allowed' 
                       : errors.licenseNumber 

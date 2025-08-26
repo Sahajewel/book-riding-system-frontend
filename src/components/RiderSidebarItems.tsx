@@ -40,6 +40,7 @@ import MyRides from "@/pages/rider/MyRides";
 import RideDetails from "@/pages/rider/RideDetails";
 import RiderProfile from "@/pages/rider/Profile";
 import type { ISidebarItem } from "@/types";
+// import Home from "@/pages/home/Home";
 
 // ... existing imports ...
 
@@ -47,6 +48,11 @@ export const RiderSideItems: ISidebarItem[] = [
   {
     title: "Rider Panel",
     items: [
+      // {
+      //   title: "Home",
+      //   url: "/admin/",
+      //   component: Home,
+      // },
       {
         title: "Book a Ride",
         url: "/rider/bookings",

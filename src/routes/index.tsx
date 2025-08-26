@@ -19,6 +19,8 @@ import Settings from "@/pages/settings/Settings";
 import UpdateRides from "@/pages/driver/UpdateRide";
 import PrivacyPolicy from "@/pages/PrivacyPolicy";
 import Terms from "@/pages/Terms";
+import CookiePolicy from "@/pages/CookiePolicy";
+import Services from "@/pages/Services";
 
 export const router = createBrowserRouter([
   {
@@ -113,5 +115,13 @@ export const router = createBrowserRouter([
   {
     Component: UpdateRides,
     path: "/update-ride",
+  },
+  {
+    Component: CookiePolicy,
+    path: "/cookies",
+  },
+  {
+    Component: Services,
+    path: "/services",
   },
 ]);

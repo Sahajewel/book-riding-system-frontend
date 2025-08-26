@@ -26,7 +26,7 @@ export default function Contact() {
 
   return (
     <div className="container mx-auto px-4 py-12 max-w-2xl">
-      <h1 className="text-4xl font-bold mb-8 text-center">Contact Us</h1>
+      <h1 className="text-4xl font-bold mb-8 text-center mt-10">Contact Us</h1>
 
       {submitted && (
         <div className="mb-6 p-4 rounded-lg bg-green-50 border border-green-200 text-green-700">
@@ -83,8 +83,8 @@ export default function Contact() {
       {/* Contact details */}
       <div className="mt-8 p-6 rounded-xl border">
         <h3 className="font-semibold mb-2">Other ways to reach us</h3>
-        <p>Email: support@ridex.example</p>
-        <p>Phone: +1 (555) 012-3456</p>
+        <p>Email: sahajewel072@gmail.com</p>
+        <p>Phone: +81 80 5052 6822</p>
       </div>
     </div>
   );

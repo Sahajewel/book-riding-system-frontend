@@ -7,7 +7,7 @@ export default function About() {
   ];
 
   const team = [
-    { name: "Ayesha Karim", role: "CEO & Co-Founder" },
+    { name: "Saha Jewel", role: "CEO & Co-Founder" },
     { name: "Mahin Rahman", role: "CTO & Co-Founder" },
     { name: "Nadia Islam", role: "Head of Product" },
     { name: "Siam Khan", role: "Head of Ops" },
@@ -17,7 +17,7 @@ export default function About() {
     <div className="container mx-auto px-4 py-12">
       {/* Intro */}
       <section className="max-w-3xl mx-auto text-center">
-        <h1 className="text-4xl font-bold mb-4">About RideX</h1>
+        <h1 className="text-4xl font-bold mb-4 mt-10">About RideX</h1>
         <p >
           We’re building the most reliable ride platform — safe, affordable, and available to all.
           Our mission is to connect people and places through technology.

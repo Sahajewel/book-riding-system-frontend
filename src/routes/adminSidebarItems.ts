@@ -45,17 +45,17 @@ export const adminSideItems: ISidebarItem[] = [
         url: "/admin/ride-oversight",
         component: RideOversight,
       },
-      {
-        title: "Profile",
-        url: "/admin/profile",
-        component: RiderProfile,
-      },
+      
       {
         title: "Filter search",
         url: "/admin/filter-search",
         component: AdminSearch,
       },
-   
+   {
+        title: "Profile",
+        url: "/admin/profile",
+        component: RiderProfile,
+      },
 
     ],
   },

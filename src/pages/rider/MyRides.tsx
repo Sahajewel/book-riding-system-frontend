@@ -43,13 +43,13 @@ const MyRides: React.FC = () => {
       <h2 className="text-2xl font-bold mb-6">My Ride History</h2>
       
       {/* Filters */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6 p-4 bg-gray-50 rounded-lg">
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6 p-4  rounded-lg">
         <select
           value={filters.status}
           onChange={(e) => setFilters({ ...filters, status: e.target.value })}
-          className="p-2 border rounded"
+          className="p-2 border rounded bg-gray-400"
         >
-          <option value="">All Status</option>
+          <option className='' value="">All Status</option>
           {Object.values(RideStatus).map(status => (
             <option key={status} value={status}>
               {status.charAt(0).toUpperCase() + status.slice(1)}
@@ -82,30 +82,30 @@ const MyRides: React.FC = () => {
       </div>
 
       {/* Rides Table */}
-      <div className="bg-white rounded-lg shadow overflow-hidden">
+      <div className=" rounded-lg shadow overflow-hidden">
         <table className="min-w-full divide-y divide-gray-200">
-          <thead className="bg-gray-50">
+          <thead className="">
             <tr>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th className="px-6 py-3 text-left text-xs font-medium  uppercase tracking-wider">
                 Date
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th className="px-6 py-3 text-left text-xs font-medium  uppercase tracking-wider">
                 Pickup
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th className="px-6 py-3 text-left text-xs font-medium  uppercase tracking-wider">
                 Destination
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th className="px-6 py-3 text-left text-xs font-medium  uppercase tracking-wider">
                 Fare
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th className="px-6 py-3 text-left text-xs font-medium  uppercase tracking-wider">
                 Status
               </th>
             </tr>
           </thead>
-          <tbody className="bg-white divide-y divide-gray-200">
+          <tbody className=" divide-y divide-gray-200">
             {paginatedRides.map((ride) => (
-              <tr key={ride._id} className="hover:bg-gray-50">
+              <tr key={ride._id} className="">
                 <td className="px-6 py-4 whitespace-nowrap">
                   {format(new Date(ride.requestedAt), 'PPp')}
                 </td>
@@ -143,7 +143,7 @@ const MyRides: React.FC = () => {
               key={page}
               onClick={() => setCurrentPage(page)}
               className={`px-3 py-1 border rounded ${
-                currentPage === page ? 'bg-blue-600 text-white' : ''
+                currentPage === page ? 'bg-blue-600' : ''
               }`}
             >
               {page}

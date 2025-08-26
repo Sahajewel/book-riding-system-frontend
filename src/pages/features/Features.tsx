@@ -37,7 +37,7 @@ export default function Features() {
 
   return (
     <div className="container mx-auto px-4 py-12">
-      <h1 className="text-4xl font-bold text-center mb-10">Features</h1>
+      <h1 className="text-4xl font-bold text-center mb-10 mt-10">Features</h1>
 
       {/* Tabs */}
       <div className="flex justify-center gap-2 mb-8">
