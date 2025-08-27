@@ -14,7 +14,6 @@ This frontend application is part of a full-stack ride booking platform similar 
 ### Key Highlights
 - 🎯 **Role-based Authentication** - Separate interfaces for Riders, Drivers, and Admins
 - 📱 **Fully Responsive** - Optimized for mobile, tablet, and desktop devices
-- 🗺️ **Real-time Tracking** - Live ride updates with interactive maps
 - 📊 **Analytics Dashboard** - Comprehensive data visualization for insights
 - 🆘 **Emergency SOS System** - Enhanced safety features for users
 - 🎨 **Modern UI/UX** - Clean, intuitive interface with smooth animations
@@ -27,6 +26,7 @@ This frontend application is part of a full-stack ride booking platform similar 
 - **Features** - Detailed breakdown of platform capabilities
 - **Contact** - Validated inquiry form
 - **FAQ** - Searchable frequently asked questions
+- **Services** - Discover the range of transportation solutions we offer to get you where you need to
 
 ### 👤 Authentication & User Management
 - JWT-based secure authentication
@@ -51,6 +51,7 @@ This frontend application is part of a full-stack ride booking platform similar 
 - **Vehicle Profile** - Manage vehicle details and documentation
 
 ### 👨‍💼 Admin Features
+- **Analytics Dashboard** - all users, riders, drivers, suspended and approved drivers list are shown
 - **User Management** - Search, filter, and manage all users
 - **Ride Oversight** - Monitor all rides with advanced filtering
 - **Analytics Dashboard** - Comprehensive platform statistics and trends
@@ -73,40 +74,40 @@ This frontend application is part of a full-stack ride booking platform similar 
 
 ### Styling & UI
 - **Tailwind CSS** - Utility-first CSS framework
-- **Headless UI** - Unstyled, accessible UI components
+- **shadcn UI** - Unstyled, accessible UI components
 - **React Icons** - Comprehensive icon library
-- **Framer Motion** - Smooth animations and transitions
+
 
 ### Data & APIs
 - **RTK Query** - Powerful data fetching and caching
 - **Axios** - HTTP client for API requests
 - **React Hook Form** - Form handling with validation
-- **Yup/Zod** - Schema validation
+- **Zod** - Schema validation
 
 ### Visualization & Maps
 - **Recharts** - Data visualization and charts
 - **Leaflet/Mapbox** - Interactive maps (optional)
-- **React Hot Toast** - Elegant notifications
+- **Sonner toast** - Elegant notifications
 
 ### Development Tools
 - **Vite** - Fast build tool and development server
 - **ESLint** - Code linting and formatting
 - **Prettier** - Code formatting
-- **Husky** - Git hooks for code quality
+
 
 ## 🚀 Getting Started
 
 ### Prerequisites
 - Node.js (v18 or higher)
-- npm or yarn
+- npm or yarn or bun
 - Git
 
 ### Installation
 
 1. **Clone the repository**
    ```bash
-   git clone https://github.com/yourusername/ride-management-frontend.git
-   cd ride-management-frontend
+   git clone https://github.com/Sahajewel/book-riding-system-frontend
+   cd book-riding-system-frontend
    ```
 
 2. **Install dependencies**
@@ -117,11 +118,9 @@ This frontend application is part of a full-stack ride booking platform similar 
    ```
 
 3. **Environment Setup**
-   Create a `.env.local` file in the root directory:
+   Create a `.env` file in the root directory:
    ```env
-   VITE_API_BASE_URL=http://localhost:5000/api
-   VITE_GOOGLE_MAPS_API_KEY=your_google_maps_api_key
-   VITE_FIREBASE_CONFIG=your_firebase_config
+   VITE_API_BASE_URL=http://localhost:5000/api/v1
    ```
 
 4. **Start Development Server**
@@ -138,38 +137,13 @@ This frontend application is part of a full-stack ride booking platform similar 
    yarn build
    ```
 
-## 📁 Project Structure
-
-```
-src/
-├── components/           # Reusable UI components
-│   ├── common/          # Shared components
-│   ├── forms/           # Form components
-│   ├── layout/          # Layout components
-│   └── ui/              # UI primitives
-├── pages/               # Page components
-│   ├── auth/            # Authentication pages
-│   ├── rider/           # Rider dashboard pages
-│   ├── driver/          # Driver dashboard pages
-│   ├── admin/           # Admin dashboard pages
-│   └── public/          # Public pages
-├── store/               # Redux store configuration
-│   ├── api/             # RTK Query API slices
-│   ├── slices/          # Redux slices
-│   └── index.ts         # Store configuration
-├── hooks/               # Custom React hooks
-├── utils/               # Utility functions
-├── types/               # TypeScript type definitions
-├── constants/           # Application constants
-└── assets/              # Static assets
-```
 
 ## 🎯 Key Features Implementation
 
 ### State Management
 - **Redux Toolkit** for global state management
 - **RTK Query** for efficient API data fetching and caching
-- **Persistent state** for authentication and user preferences
+
 
 ### Responsive Design
 - **Mobile-first approach** with Tailwind CSS
@@ -179,30 +153,28 @@ src/
 ### Performance Optimization
 - **Lazy loading** for route-based code splitting
 - **Skeleton loaders** for better perceived performance
-- **Optimized images** with proper sizing and formats
-- **Memoization** for expensive calculations
+
 
 ### Error Handling
 - **Comprehensive form validation** with clear error messages
 - **API error handling** with user-friendly notifications
-- **Network error recovery** with retry mechanisms
-- **Global error boundaries** for graceful error handling
+
 
 ## 🧪 Testing
 
 ### Test Credentials
 ```
 Admin User:
-Email: admin@rideapp.com
-Password: Admin123!
+Email: admin@gmail.com
+Password: 123456
 
 Driver User:
-Email: driver@rideapp.com
-Password: Driver123!
+Email: driver@gmail.com
+Password: 123456
 
 Rider User:
-Email: rider@rideapp.com
-Password: Rider123!
+Email: rider@gmail.com
+Password: 123456
 ```
 
 ### Running Tests
@@ -214,64 +186,28 @@ yarn test
 
 ## 📱 API Integration
 
-The frontend communicates with a RESTful backend API built with Node.js and Express. Key API endpoints include:
-
-- **Authentication**: `/auth/login`, `/auth/register`, `/auth/logout`
-- **Rides**: `/rides`, `/rides/:id`, `/rides/book`, `/rides/track`
-- **Users**: `/users/profile`, `/users/update`
-- **Admin**: `/admin/users`, `/admin/rides`, `/admin/analytics`
-
-API documentation is available at: [Backend API Docs](https://your-backend-url.com/api-docs)
 
 ## 🚀 Deployment
 
-### Frontend Deployment (Vercel/Netlify)
-1. Connect your GitHub repository
-2. Set environment variables
-3. Deploy with automatic builds on push
-
-### Environment Variables for Production
-```env
-VITE_API_BASE_URL=https://your-production-api.com/api
-VITE_GOOGLE_MAPS_API_KEY=your_production_maps_key
-VITE_ENVIRONMENT=production
-```
-
-## 🤝 Contributing
-
-1. Fork the repository
-2. Create a feature branch: `git checkout -b feature/your-feature-name`
-3. Commit your changes: `git commit -m 'Add some feature'`
-4. Push to the branch: `git push origin feature/your-feature-name`
-5. Submit a pull request
 
 ### Code Style Guidelines
 - Follow TypeScript best practices
 - Use meaningful component and variable names
-- Add JSDoc comments for complex functions
-- Maintain consistent formatting with Prettier
-- Write unit tests for new features
 
-## 📄 License
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
 ## 👥 Team
 
-- **[Your Name]** - Full Stack Developer
-- **[Team Member 2]** - UI/UX Designer
-- **[Team Member 3]** - Backend Developer
-
+- **[Saha Jewel Kumar]** - Full Stack Developer
 ## 📞 Support
 
-For support, email support@rideapp.com or join our Slack channel.
+For support, email jewelsaha@gmail.com.
 
 ## 🙏 Acknowledgments
 
 - React and Redux teams for excellent documentation
 - Tailwind CSS for the utility-first approach
-- The open-source community for valuable libraries and tools
 
 ---
 
-**Made with ❤️ by [Your Team Name]**
+**Made with ❤️ by [Saha Jewel Kumar, Credit goes to Programming Hero Team]**
