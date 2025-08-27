@@ -169,7 +169,7 @@ Email: admin@gmail.com
 Password: 123456
 
 Driver User:
-Email: driver@gmail.com
+Email: saha@gmail.com
 Password: 123456
 
 Rider User:
@@ -201,7 +201,7 @@ yarn test
 - **[Saha Jewel Kumar]** - Full Stack Developer
 ## 📞 Support
 
-For support, email jewelsaha@gmail.com.
+For support, email jewelsaha072@gmail.com.
 
 ## 🙏 Acknowledgments
 

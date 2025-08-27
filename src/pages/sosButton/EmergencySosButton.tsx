@@ -103,7 +103,7 @@ const EmergencySOS: React.FC<EmergencySOSProps> = ({ isActive, currentLocation }
       {/* Floating SOS Button */}
       <button
         onClick={handleSOSClick}
-        className="fixed bottom-6 right-6 z-50 w-16 h-16 bg-red-600 hover:bg-red-700 text-white rounded-full shadow-lg flex items-center justify-center transition-all duration-300 hover:scale-110"
+        className="fixed bottom-6 right-6 z-50 w-16 h-16 bg-red-600 hover:bg-red-700  rounded-full shadow-lg flex items-center justify-center transition-all duration-300 hover:scale-110"
         aria-label="Emergency SOS"
       >
         <AlertTriangle size={28} />
@@ -112,7 +112,7 @@ const EmergencySOS: React.FC<EmergencySOSProps> = ({ isActive, currentLocation }
       {/* Emergency Options Modal */}
       {isOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
-          <div className="bg-white rounded-lg p-6 w-11/12 max-w-md">
+          <div className=" rounded-lg p-6 w-11/12 max-w-md">
             <div className="flex justify-between items-center mb-4">
               <h2 className="text-xl font-bold text-red-600">Emergency Assistance</h2>
               <button
@@ -124,7 +124,7 @@ const EmergencySOS: React.FC<EmergencySOSProps> = ({ isActive, currentLocation }
             </div>
 
             <div className="space-y-3">
-              <div className="bg-red-50 p-4 rounded-lg mb-4">
+              <div className=" p-4 rounded-lg mb-4">
                 <p className="text-red-800 font-medium">
                   {userLocation 
                     ? `Your location: ${userLocation.lat.toFixed(4)}, ${userLocation.lng.toFixed(4)}`
@@ -134,21 +134,21 @@ const EmergencySOS: React.FC<EmergencySOSProps> = ({ isActive, currentLocation }
               </div>
 
               {/* Emergency Services */}
-              <h3 className="font-semibold text-gray-700 mb-2">Emergency Services:</h3>
+              <h3 className="font-semibold  mb-2">Emergency Services:</h3>
               {emergencyContacts.filter(c => c.type !== 'contact').map((contact, index) => (
-                <div key={index} className="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
+                <div key={index} className="flex justify-between items-center p-3  rounded-lg">
                   <span className="font-medium">{contact.name}</span>
                   <div className="flex space-x-2">
                     <button
                       onClick={() => makeEmergencyCall(contact.phone)}
-                      className="p-2 bg-green-600 text-white rounded-full hover:bg-green-700"
+                      className="p-2 bg-green-600  rounded-full hover:bg-green-700"
                       title={`Call ${contact.name}`}
                     >
                       <Phone size={18} />
                     </button>
                     <button
                       onClick={() => sendEmergencySMS(contact)}
-                      className="p-2 bg-blue-600 text-white rounded-full hover:bg-blue-700"
+                      className="p-2 bg-blue-600  rounded-full hover:bg-blue-700"
                       title={`Message ${contact.name}`}
                     >
                       <MessageCircle size={18} />
@@ -160,28 +160,28 @@ const EmergencySOS: React.FC<EmergencySOSProps> = ({ isActive, currentLocation }
               {/* Personal Contacts */}
               {contacts.length > 0 && (
                 <>
-                  <h3 className="font-semibold text-gray-700 mb-2 mt-4">Your Emergency Contacts:</h3>
+                  <h3 className="font-semibold  mb-2 mt-4">Your Emergency Contacts:</h3>
                   {contacts.map((contact, index) => (
-                    <div key={index} className="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
+                    <div key={index} className="flex justify-between items-center p-3  rounded-lg">
                       <span className="font-medium">{contact.name}</span>
                       <div className="flex space-x-2">
                         <button
                           onClick={() => makeEmergencyCall(contact.phone)}
-                          className="p-2 bg-green-600 text-white rounded-full hover:bg-green-700"
+                          className="p-2 bg-green-600  rounded-full hover:bg-green-700"
                           title={`Call ${contact.name}`}
                         >
                           <Phone size={18} />
                         </button>
                         <button
                           onClick={() => sendEmergencySMS(contact)}
-                          className="p-2 bg-blue-600 text-white rounded-full hover:bg-blue-700"
+                          className="p-2 bg-blue-600  rounded-full hover:bg-blue-700"
                           title={`Message ${contact.name}`}
                         >
                           <MessageCircle size={18} />
                         </button>
                         <button
                           onClick={() => shareLocation(contact)}
-                          className="p-2 bg-purple-600 text-white rounded-full hover:bg-purple-700"
+                          className="p-2 bg-purple-600  rounded-full hover:bg-purple-700"
                           title={`Share location with ${contact.name}`}
                         >
                           <MapPin size={18} />
@@ -195,7 +195,7 @@ const EmergencySOS: React.FC<EmergencySOSProps> = ({ isActive, currentLocation }
               {/* Share Location Button */}
               <button
                 onClick={shareLiveLocation}
-                className="w-full mt-4 py-3 bg-purple-600 text-white rounded-lg font-medium hover:bg-purple-700 flex items-center justify-center space-x-2"
+                className="w-full mt-4 py-3 bg-purple-600  rounded-lg font-medium hover:bg-purple-700 flex items-center justify-center space-x-2"
               >
                 <MapPin size={20} />
                 <span>Share Live Location</span>
@@ -207,7 +207,7 @@ const EmergencySOS: React.FC<EmergencySOSProps> = ({ isActive, currentLocation }
                   // This would navigate to settings in a real app
                   alert('Navigate to settings to add emergency contacts');
                 }}
-                className="w-full mt-2 py-2 border border-gray-300 text-gray-700 rounded-lg font-medium hover:bg-gray-50"
+                className="w-full mt-2 py-2 border border-gray-300  rounded-lg font-medium "
               >
                 + Add Emergency Contact
               </button>

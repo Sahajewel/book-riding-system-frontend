@@ -20,7 +20,7 @@ const RiderProfile = lazy(() => import("@/pages/rider/Profile"));
 
 export const adminSideItems: ISidebarItem[] = [
   {
-    title: "Dashboard",
+    title: "Admin Dashboard",
     items: [
       {
         title: "Analytics",

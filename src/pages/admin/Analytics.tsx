@@ -133,29 +133,7 @@ export default function AnalyticsDashboard() {
           </div>
         </div>
 
-        <div className=" p-6 rounded-lg shadow-sm border">
-          <h2 className="text-lg font-semibold mb-4 flex items-center">
-            <Car className="mr-2 h-5 w-5" /> Driver Status
-          </h2>
-          <div className="grid grid-cols-2 gap-4">
-            <div className="p-3  rounded-lg">
-              <p className="text-sm ">Pending</p>
-              <p className="text-2xl font-bold">{stats.drivers?.pending || 0}</p>
-            </div>
-            <div className="p-3  rounded-lg">
-              <p className="text-sm ">Approved</p>
-              <p className="text-2xl font-bold">{stats.drivers?.approved || 0}</p>
-            </div>
-            <div className="p-3  rounded-lg">
-              <p className="text-sm ">Suspended</p>
-              <p className="text-2xl font-bold">{stats.drivers?.suspended || 0}</p>
-            </div>
-            <div className="p-3 rounded-lg">
-              <p className="text-sm ">Total</p>
-              <p className="text-2xl font-bold">{stats.drivers?.total || 0}</p>
-            </div>
-          </div>
-        </div>
+      
       </div>
 
       {/* Ride Statistics */}

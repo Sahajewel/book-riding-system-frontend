@@ -1,5 +1,6 @@
 // src/components/Navbar.tsx
 import Logo from "@/assets/icon/Logo";
+// import Cookies from "js-cookie"
 import { Button } from "@/components/ui/button";
 import {
   NavigationMenu,
@@ -19,6 +20,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { toast } from "sonner";
 
 const navigationLinks = [
   { href: "/", label: "Home", role: "PUBLIC" },
@@ -40,6 +42,8 @@ export default function Navbar() {
   const handleLogout = async () => {
     await logout(undefined).unwrap();
     dispatch(authApi.util.resetApiState());
+    toast.success("logout successfully")
+    // Cookies.remove("accessToken")
   };
 
   return (
