@@ -259,7 +259,7 @@ export default function DriverManagement() {
                               Suspend
                             </Button>
                           )}
-                          <DropdownMenu>
+                          {/* <DropdownMenu>
                             <DropdownMenuTrigger asChild>
                               <Button variant="ghost" className="h-8 w-8 p-0">
                                 <span className="sr-only">Open menu</span>
@@ -271,7 +271,7 @@ export default function DriverManagement() {
                               <DropdownMenuItem>View documents</DropdownMenuItem>
                               <DropdownMenuItem>Contact driver</DropdownMenuItem>
                             </DropdownMenuContent>
-                          </DropdownMenu>
+                          </DropdownMenu> */}
                         </div>
                       </TableCell>
                     </TableRow>

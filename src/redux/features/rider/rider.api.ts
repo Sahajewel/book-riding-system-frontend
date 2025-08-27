@@ -64,7 +64,7 @@ import type { IRide } from "@/types/ride.interface";
 export const riderApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
     // ✅ Request a ride
-    requestRide: builder.mutation<IRide, { pickupLocation: string; dropoffLocation: string }>({
+    requestRide: builder.mutation<IRide, { pickupLocation: string; dropoffLocation: string, fare:number }>({
       query: (data) => ({
         url: "/ride/request",
         method: "POST",

@@ -35,14 +35,20 @@
 
 
 // src/routes/router.tsx (update this file)
-import RequestRide from "@/pages/rider/RequestRide";
-import MyRides from "@/pages/rider/MyRides";
-import RideDetails from "@/pages/rider/RideDetails";
-import RiderProfile from "@/pages/rider/Profile";
+// import RequestRide from "@/pages/rider/RequestRide";
+// import MyRides from "@/pages/rider/MyRides";
+// import RideDetails from "@/pages/rider/RideDetails";
+// import RiderProfile from "@/pages/rider/Profile";
 import type { ISidebarItem } from "@/types";
+import { lazy } from "react";
 // import Home from "@/pages/home/Home";
 
 // ... existing imports ...
+
+const RequestRide = lazy(() => import("@/pages/rider/RequestRide"));
+const MyRides = lazy(() => import("@/pages/rider/MyRides"));
+const RideDetails = lazy(() => import("@/pages/rider/RideDetails"));
+const RiderProfile = lazy(() => import("@/pages/rider/Profile"));
 
 export const RiderSideItems: ISidebarItem[] = [
   {

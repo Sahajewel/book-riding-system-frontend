@@ -4,6 +4,8 @@
 // TailwindCSS dark mode is supported via the `dark:` classes. No extra theme logic is required
 // if your app already toggles `class="dark"` on <html> or <body>.
 
+
+
 export default function PrivacyPolicy() {
   const lastUpdated = "2025-08-01"; // ← update as needed
   const appName = "RideX"; // ← reuse across the doc
@@ -33,11 +35,11 @@ export default function PrivacyPolicy() {
       <div className="mx-auto w-full max-w-4xl px-6 py-12 lg:py-16">
         {/* Header */}
         <header className="mb-10 border-b border-gray-200 pb-6 dark:border-neutral-800">
-          <p className="text-sm text-gray-500 dark:text-neutral-400">
+          <p className="text-sm text-gray-500 dark:text-neutral-400 mt-10">
             Last updated: <time dateTime={lastUpdated}>{lastUpdated}</time>
           </p>
-          <h1 className="mt-2 text-3xl font-bold tracking-tight sm:text-4xl">
-            {appName} Privacy Policy
+          <h1 className="mt-2 text-3xl font-bold tracking-tight sm:text-4xl ">
+             Privacy Policy
           </h1>
           <p className="mt-3 max-w-prose text-base text-gray-600 dark:text-neutral-300">
             This Privacy Policy explains how {companyName} ("we", "us", or "our") collects, uses, shares, and protects

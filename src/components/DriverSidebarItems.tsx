@@ -1,14 +1,21 @@
 // src/components/DriverSidebarItems.ts
-import DriverAvailability from "@/pages/driver/DriverAvailability";
-import ActiveRide from "@/pages/driver/ActiveRide";
-import EarningsDashboard from "@/pages/driver/EarningDashboard";
-import DriverRideHistory from "@/pages/driver/DriverHistory";
-import RideRequests from "@/pages/driver/RideRequest";
+// import DriverAvailability from "@/pages/driver/DriverAvailability";
+// import ActiveRide from "@/pages/driver/ActiveRide";
+// import EarningsDashboard from "@/pages/driver/EarningDashboard";
+// import DriverRideHistory from "@/pages/driver/DriverHistory";
+// import RideRequests from "@/pages/driver/RideRequest";
 import type { ISidebarItem } from "@/types";
+import { lazy } from "react";
 // import RiderManagement from "@/pages/admin/RiderManagement";
 // import RiderProfile from "@/pages/rider/Profile";
-import DriverProfile from "@/pages/driver/DriverProfile";
+// import DriverProfile from "@/pages/driver/DriverProfile";
 
+const DriverProfile = lazy(() => import("@/pages/driver/DriverProfile"));
+const DriverAvailability = lazy(() => import("@/pages/driver/DriverAvailability"));
+const ActiveRide = lazy(() => import("@/pages/driver/ActiveRide"));
+const EarningsDashboard = lazy(() => import("@/pages/driver/EarningDashboard"));
+const DriverRideHistory = lazy(() => import("@/pages/driver/DriverHistory"));
+const RideRequests = lazy(() => import("@/pages/driver/RideRequest"));
 export const DriverSideItems: ISidebarItem[] = [
   {
     title: "Driver Panel",

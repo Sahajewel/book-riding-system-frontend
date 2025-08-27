@@ -32,3 +32,10 @@ export interface IRide {
   completedAt?: string;
   createdAt: string
 }
+
+export interface IRideRequest {
+  pickupLocation: string;
+  dropoffLocation: string;
+  fare?: number;
+  paymentMethod?: string;
+}

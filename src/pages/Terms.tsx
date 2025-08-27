@@ -8,7 +8,7 @@ export default function Terms() {
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 px-6 py-12">
       <div className="max-w-4xl mx-auto">
-        <h1 className="text-3xl font-bold mb-6 text-center">Terms & Conditions</h1>
+        <h1 className="text-3xl font-bold mb-6 text-center mt-10">Terms & Conditions</h1>
         <p className="text-sm text-gray-600 dark:text-gray-400 text-center mb-12">
           Effective Date: March 01, 2025
         </p>

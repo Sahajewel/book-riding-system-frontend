@@ -3,11 +3,13 @@
 
 
 
+// import AdminAnalyticsDashboard from "@/pages/admin/Analytics";
 import type { ISidebarItem } from "@/types";
 import { lazy } from "react";
 
-const Analytics = lazy(() => import("@/pages/admin/Analytics"));
+// const Analytics = lazy(() => import("@/pages/admin/Analytics"));
 const UserManagement = lazy(() => import("@/pages/admin/UserManagement"));
+const AdminAnalyticsDashboard = lazy(() => import("@/pages/admin/Analytics"));
 const DriverManagement = lazy(() => import("@/pages/admin/DriverManagement"));
 const AdminSearch = lazy(() => import("@/pages/admin/adminSearch/AdminSearch"));
 const RideOversight = lazy(() => import("@/pages/admin/RideOversight"));
@@ -23,7 +25,8 @@ export const adminSideItems: ISidebarItem[] = [
       {
         title: "Analytics",
         url: "/admin/analytics",
-        component: Analytics,
+        // component: Analytics,
+        component: AdminAnalyticsDashboard,
       },
     ],
   },
