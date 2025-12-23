@@ -1,11 +1,13 @@
-import { AppSidebar } from "@/components/app-sidebar"
-import { Separator } from "@/components/ui/separator"
+import { AppSidebar } from "@/components/app-sidebar";
+import { Separator } from "@/components/ui/separator";
 import {
   SidebarInset,
   SidebarProvider,
   SidebarTrigger,
-} from "@/components/ui/sidebar"
-import { Outlet } from "react-router"
+} from "@/components/ui/sidebar";
+import DashboardFooter from "@/pages/dashboard/DashboardFooter";
+import DashboardNavbar from "@/pages/dashboard/DashboardNavbar";
+import { Outlet } from "react-router";
 
 export default function DashboardLayout() {
   return (
@@ -20,10 +22,12 @@ export default function DashboardLayout() {
           />
         </header>
         <div className="flex flex-1 flex-col gap-4 p-4">
-         <Outlet></Outlet>
-          <div className="bg-muted/50 min-h-[100vh] flex-1 rounded-xl md:min-h-min" />
+          <DashboardNavbar></DashboardNavbar>
+          <Outlet></Outlet>
+          <DashboardFooter></DashboardFooter>
+          {/* <div className="bg-muted/50 min-h-[100vh] flex-1 rounded-xl md:min-h-min" /> */}
         </div>
       </SidebarInset>
     </SidebarProvider>
-  )
+  );
 }
