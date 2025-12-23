@@ -23,6 +23,19 @@ const DriverRideHistory = () => {
   
   const itemsPerPage = 10;
 
+  // Helper function to check if ride is completed (includes accepted status)
+  const isCompletedRide = (ride: IRide) => {
+    return ride.status === RideStatus.COMPLETED || 
+           ride.status === 'completed' ||
+           ride.status === 'accepted' || 
+           ride.status === 'ACCEPTED';
+  };
+
+  // Calculate completed rides for earnings
+  const completedRides = useMemo(() => {
+    return rides.filter((ride: IRide) => isCompletedRide(ride));
+  }, [rides]);
+
   // Filter rides based on search and filters
   const filteredRides = useMemo(() => {
     // Create a copy of the rides array to avoid mutating the original
@@ -30,11 +43,20 @@ const DriverRideHistory = () => {
 
     // Search filter
     if (searchTerm) {
-      filtered = filtered.filter((ride: IRide) => 
-        ride.pickupLocation.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        ride.dropoffLocation.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        ride._id?.toString().toLowerCase().includes(searchTerm.toLowerCase())
-      );
+      filtered = filtered.filter((ride: IRide) => {
+        const pickupLocation = typeof ride.pickupLocation === 'string' 
+          ? ride.pickupLocation 
+          : ride.pickupLocation?.address || '';
+        const dropoffLocation = typeof ride.dropoffLocation === 'string'
+          ? ride.dropoffLocation
+          : ride.dropoffLocation?.address || '';
+
+        return (
+          pickupLocation.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          dropoffLocation.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          ride._id?.toString().toLowerCase().includes(searchTerm.toLowerCase())
+        );
+      });
     }
 
     // Status filter
@@ -84,6 +106,9 @@ const DriverRideHistory = () => {
   const getStatusColor = (status: RideStatus) => {
     switch (status) {
       case RideStatus.COMPLETED:
+      case 'completed':
+      case 'accepted':
+      case 'ACCEPTED':
         return "bg-green-100 text-green-800";
       case RideStatus.CANCELLED:
         return "bg-red-100 text-red-800";
@@ -148,7 +173,7 @@ const DriverRideHistory = () => {
               <div className="ml-4">
                 <p className="text-sm font-medium text-gray-600">Completed</p>
                 <p className="text-2xl font-bold text-gray-900">
-                  {rides.filter((r: IRide) => r.status === RideStatus.COMPLETED).length}
+                  {completedRides.length}
                 </p>
               </div>
             </div>
@@ -162,7 +187,7 @@ const DriverRideHistory = () => {
               <div className="ml-4">
                 <p className="text-sm font-medium text-gray-600">Cancelled</p>
                 <p className="text-2xl font-bold text-gray-900">
-                  {rides.filter((r: IRide) => r.status === RideStatus.CANCELLED).length}
+                  {rides.filter((r: IRide) => r.status === RideStatus.CANCELLED || r.status === 'cancelled').length}
                 </p>
               </div>
             </div>
@@ -176,7 +201,7 @@ const DriverRideHistory = () => {
               <div className="ml-4">
                 <p className="text-sm font-medium text-gray-600">Total Earnings</p>
                 <p className="text-2xl font-bold text-gray-900">
-                  ৳{rides.filter((r: IRide) => r.status === RideStatus.COMPLETED).reduce((sum, r) => sum + (r.fare || 0), 0)}
+                  ৳{completedRides.reduce((sum, r) => sum + (r.fare || 0), 0)}
                 </p>
               </div>
             </div>
@@ -206,10 +231,10 @@ const DriverRideHistory = () => {
             >
               <option value="all">All Statuses</option>
               <option value={RideStatus.COMPLETED}>Completed</option>
+              <option value="accepted">Accepted</option>
               <option value={RideStatus.CANCELLED}>Cancelled</option>
               <option value={RideStatus.REJECTED}>Rejected</option>
               <option value={RideStatus.ONGOING}>Ongoing</option>
-              <option value={RideStatus.ACCEPTED}>Accepted</option>
             </select>
 
             {/* Date Filter */}
@@ -278,55 +303,65 @@ const DriverRideHistory = () => {
                     </tr>
                   </thead>
                   <tbody className="bg-white divide-y divide-gray-200">
-                    {paginatedRides.map((ride: IRide) => (
-                      <tr key={ride._id} className="hover:bg-gray-50">
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <div className="text-sm font-medium text-gray-900">
-                            #{ride._id?.slice(-8)}
-                          </div>
-                          <div className="text-sm text-gray-500">
-                            Ride ID
-                          </div>
-                        </td>
-                        <td className="px-6 py-4">
-                          <div className="text-sm text-gray-900">
-                            <div className="flex items-center mb-1">
-                              <div className="w-2 h-2 bg-green-500 rounded-full mr-2"></div>
-                              <span className="truncate max-w-xs">{ride.pickupLocation}</span>
+                    {paginatedRides.map((ride: IRide) => {
+                      // Handle location data properly
+                      const pickupLocation = typeof ride.pickupLocation === 'string' 
+                        ? ride.pickupLocation 
+                        : ride.pickupLocation?.address || 'N/A';
+                      const dropoffLocation = typeof ride.dropoffLocation === 'string'
+                        ? ride.dropoffLocation
+                        : ride.dropoffLocation?.address || 'N/A';
+
+                      return (
+                        <tr key={ride._id} className="hover:bg-gray-50">
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <div className="text-sm font-medium text-gray-900">
+                              #{ride._id?.slice(-8)}
                             </div>
-                            <div className="flex items-center">
-                              <div className="w-2 h-2 bg-red-500 rounded-full mr-2"></div>
-                              <span className="truncate max-w-xs">{ride.dropoffLocation}</span>
+                            <div className="text-sm text-gray-500">
+                              Ride ID
                             </div>
-                          </div>
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <div className="text-sm text-gray-900">
-                            {new Date(ride.requestedAt).toLocaleDateString()}
-                          </div>
-                          <div className="text-sm text-gray-500">
-                            {new Date(ride.requestedAt).toLocaleTimeString()}
-                          </div>
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusColor(ride.status)}`}>
-                            {ride.status}
-                          </span>
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                          {ride.fare ? `৳${ride.fare}` : '-'}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                          <button
-                            onClick={() => setSelectedRide(ride)}
-                            className="text-blue-600 hover:text-blue-900 flex items-center"
-                          >
-                            <Eye className="h-4 w-4 mr-1" />
-                            View
-                          </button>
-                        </td>
-                      </tr>
-                    ))}
+                          </td>
+                          <td className="px-6 py-4">
+                            <div className="text-sm text-gray-900">
+                              <div className="flex items-center mb-1">
+                                <div className="w-2 h-2 bg-green-500 rounded-full mr-2"></div>
+                                <span className="truncate max-w-xs">{pickupLocation}</span>
+                              </div>
+                              <div className="flex items-center">
+                                <div className="w-2 h-2 bg-red-500 rounded-full mr-2"></div>
+                                <span className="truncate max-w-xs">{dropoffLocation}</span>
+                              </div>
+                            </div>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <div className="text-sm text-gray-900">
+                              {new Date(ride.requestedAt).toLocaleDateString()}
+                            </div>
+                            <div className="text-sm text-gray-500">
+                              {new Date(ride.requestedAt).toLocaleTimeString()}
+                            </div>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusColor(ride.status)}`}>
+                              {ride.status}
+                            </span>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                            {ride.fare ? `৳${ride.fare}` : '-'}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                            <button
+                              onClick={() => setSelectedRide(ride)}
+                              className="text-blue-600 hover:text-blue-900 flex items-center"
+                            >
+                              <Eye className="h-4 w-4 mr-1" />
+                              View
+                            </button>
+                          </td>
+                        </tr>
+                      );
+                    })}
                   </tbody>
                 </table>
               </div>
@@ -434,14 +469,22 @@ const DriverRideHistory = () => {
                         <div className="w-3 h-3 bg-green-500 rounded-full mt-1 mr-3"></div>
                         <div>
                           <p className="text-sm font-medium">Pickup</p>
-                          <p className="text-gray-700">{selectedRide.pickupLocation}</p>
+                          <p className="text-gray-700">
+                            {typeof selectedRide.pickupLocation === 'string' 
+                              ? selectedRide.pickupLocation 
+                              : selectedRide.pickupLocation?.address || 'N/A'}
+                          </p>
                         </div>
                       </div>
                       <div className="flex items-start">
                         <div className="w-3 h-3 bg-red-500 rounded-full mt-1 mr-3"></div>
                         <div>
                           <p className="text-sm font-medium">Destination</p>
-                          <p className="text-gray-700">{selectedRide.dropoffLocation}</p>
+                          <p className="text-gray-700">
+                            {typeof selectedRide.dropoffLocation === 'string'
+                              ? selectedRide.dropoffLocation
+                              : selectedRide.dropoffLocation?.address || 'N/A'}
+                          </p>
                         </div>
                       </div>
                     </div>

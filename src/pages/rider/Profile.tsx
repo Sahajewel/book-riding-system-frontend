@@ -1,6 +1,4 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable @typescript-eslint/no-explicit-any */
-// src/pages/Settings.tsx
 import React from "react";
 import { useForm, type SubmitHandler } from "react-hook-form";
 import { Input } from "@/components/ui/input";
@@ -14,8 +12,21 @@ import {
 } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
-import { useUpdateProfileMutation, useUserInfoQuery } from "@/redux/features/auth/auth.api";
-import { User, Mail, Lock, Save, Camera, X } from "lucide-react";
+import {
+  useUpdateProfileMutation,
+  useUserInfoQuery,
+} from "@/redux/features/auth/auth.api";
+import {
+  User,
+  Lock,
+  Save,
+  Camera,
+  X,
+  ShieldCheck,
+  Loader2,
+  Sparkles,
+} from "lucide-react";
+import { motion } from "framer-motion";
 
 type ProfileForm = {
   name: string;
@@ -25,15 +36,14 @@ type ProfileForm = {
   profileImage: FileList;
 };
 
-// localStorage key for profile image
-const PROFILE_IMAGE_KEY = 'user_profile_image';
+const PROFILE_IMAGE_KEY = "user_profile_image";
 
 export default function RiderProfile() {
-  const { data, refetch } = useUserInfoQuery(undefined);
+  const { data, refetch, isFetching } = useUserInfoQuery(undefined);
   const [updateProfile, { isLoading }] = useUpdateProfileMutation();
-  
-  // Local state to persist profile image even after reload
-  const [profileImageUrl, setProfileImageUrl] = React.useState<string | null>(null);
+  const [profileImageUrl, setProfileImageUrl] = React.useState<string | null>(
+    null
+  );
 
   const form = useForm<ProfileForm>({
     defaultValues: {
@@ -44,15 +54,11 @@ export default function RiderProfile() {
     },
   });
 
-  // Load profile image from localStorage on component mount
   React.useEffect(() => {
     const savedImage = localStorage.getItem(PROFILE_IMAGE_KEY);
-    if (savedImage) {
-      setProfileImageUrl(savedImage);
-    }
+    if (savedImage) setProfileImageUrl(savedImage);
   }, []);
 
-  // Initialize form and profile image from API
   React.useEffect(() => {
     if (data?.data) {
       form.reset({
@@ -61,12 +67,9 @@ export default function RiderProfile() {
         password: "",
         confirmPassword: "",
       });
-
-      // Only set from API if no image is saved in localStorage and API has image
       const savedImage = localStorage.getItem(PROFILE_IMAGE_KEY);
       if (!savedImage && data.data.profileImage) {
         setProfileImageUrl(data.data.profileImage);
-        // Save to localStorage for future use
         localStorage.setItem(PROFILE_IMAGE_KEY, data.data.profileImage);
       }
     }
@@ -79,8 +82,8 @@ export default function RiderProfile() {
       reader.onloadend = () => {
         const imageUrl = reader.result as string;
         setProfileImageUrl(imageUrl);
-        // Save to localStorage
         localStorage.setItem(PROFILE_IMAGE_KEY, imageUrl);
+        toast.info("Preview updated!");
       };
       reader.readAsDataURL(file);
     }
@@ -88,14 +91,13 @@ export default function RiderProfile() {
 
   const removeImage = () => {
     setProfileImageUrl(null);
-    // Remove from localStorage
     localStorage.removeItem(PROFILE_IMAGE_KEY);
     form.setValue("profileImage", {} as FileList);
-    const fileInput = document.getElementById("profileImage") as HTMLInputElement;
-    if (fileInput) fileInput.value = "";
+    toast.warning("Profile photo removed");
   };
 
   const onSubmit: SubmitHandler<ProfileForm> = async (values) => {
+    // ১. পাসওয়ার্ড ম্যাচিং চেক
     if (values.password && values.password !== values.confirmPassword) {
       form.setError("confirmPassword", { message: "Passwords do not match" });
       return;
@@ -105,180 +107,268 @@ export default function RiderProfile() {
 
     try {
       const formData = new FormData();
+
+      // গুরুত্বপূর্ণ: নাম এবং ইমেইল সবসময় অ্যাপেন্ড করবি
       formData.append("name", values.name);
       formData.append("email", values.email);
 
-      if (values.password) formData.append("password", values.password);
-      if (values.profileImage && values.profileImage.length > 0) {
+      // পাসওয়ার্ড থাকলে তবেই অ্যাপেন্ড করবি
+      if (values.password && values.password.length >= 6) {
+        formData.append("password", values.password);
+      }
+
+      // ইমেজ হ্যান্ডলিং
+      if (values.profileImage?.[0]) {
         formData.append("profileImage", values.profileImage[0]);
-      } else if (!profileImageUrl && data.data.profileImage) {
-        formData.append("removeProfileImage", "true");
       }
 
-      const response = await updateProfile({ id: data.data._id, body: formData } as any).unwrap();
+      // API Call
+      // এখানে সরাসরি unwrap() করবি এবং নিশ্চিত করবি তোর `updateProfile`
+      // মিউটেশন যেন `FormData` রিসিভ করার ক্ষমতা রাখে
+      await updateProfile({
+        id: data.data._id,
+        name: values.name,
+        email: values.email,
+        ...(values.password && { password: values.password }),
+      }).unwrap();
 
-      toast.success("Profile updated successfully!");
-      form.reset({ ...values, password: "", confirmPassword: "" });
+      toast.success("Identity updated successfully!");
 
-      // Update local state and localStorage after successful update
-      const refreshed = await refetch();
-      if (refreshed.data?.data?.profileImage) {
-        const newImageUrl = refreshed.data.data.profileImage;
-        setProfileImageUrl(newImageUrl);
-        localStorage.setItem(PROFILE_IMAGE_KEY, newImageUrl);
-      } else if (!profileImageUrl) {
-        // If image was removed
-        localStorage.removeItem(PROFILE_IMAGE_KEY);
+      // ২. রিফেচ করার পর ফর্ম রিসেট
+      const updatedInfo = await refetch();
+
+      if (updatedInfo.data) {
+        form.reset({
+          name: updatedInfo.data.data.name,
+          email: updatedInfo.data.data.email,
+          password: "",
+          confirmPassword: "",
+        });
       }
-
     } catch (error: any) {
-      toast.error(error?.data?.message || "Failed to update profile");
+      console.log("Error details:", error);
+      toast.error(error?.data?.message || "Failed to sync profile");
     }
   };
 
   return (
-    <div className="container mx-auto py-8 max-w-4xl space-y-8">
-      <div className="text-center mb-8">
-        <h1 className="text-3xl font-bold">Update Your Profile</h1>
-        <p className="text-gray-600">Manage your personal information and profile photo</p>
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      className="container mx-auto py-10 px-4 max-w-5xl"
+    >
+      {/* Dynamic Header */}
+      <div className="flex flex-col items-center text-center mb-12 space-y-3">
+        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-indigo-50 text-indigo-600 text-xs font-bold uppercase tracking-wider animate-pulse">
+          <Sparkles size={14} /> Personal Account
+        </div>
+        <h1 className="text-4xl font-black tracking-tight text-slate-900">
+          Account Control Center
+        </h1>
+        <p className="text-slate-500 max-w-md">
+          Customize your digital presence and keep your security credentials up
+          to date.
+        </p>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        {/* Profile Image Card */}
-        <Card>
-          <CardHeader className="pb-4">
-            <div className="flex items-center gap-3">
-              <div className="p-2 rounded-full bg-blue-100">
-                <Camera className="h-5 w-5 text-blue-600" />
-              </div>
-              <div>
-                <CardTitle>Profile Photo</CardTitle>
-                <CardDescription>Update your profile picture</CardDescription>
-              </div>
-            </div>
-          </CardHeader>
-          <CardContent className="flex flex-col items-center">
-            <div className="relative mb-4">
-              <img
-                src={profileImageUrl || "/default-avatar.png"}
-                alt="Profile"
-                className="w-32 h-32 rounded-full object-cover border-4 border-gray-200"
-              />
-              {profileImageUrl && (
-                <button
-                  type="button"
-                  onClick={removeImage}
-                  className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 hover:bg-red-600 transition-colors"
-                  aria-label="Remove profile image"
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+        {/* Left Col: Avatar Control */}
+        <div className="lg:col-span-4 space-y-6">
+          <Card className="rounded-[2.5rem] border-none shadow-xl shadow-indigo-100/50 overflow-hidden bg-white">
+            <CardHeader className="text-center pb-2">
+              <CardTitle className="text-xl font-bold">Your Avatar</CardTitle>
+            </CardHeader>
+            <CardContent className="flex flex-col items-center pb-8">
+              <div className="relative group cursor-pointer">
+                <div className="absolute inset-0 bg-indigo-500 rounded-full blur-xl opacity-20 group-hover:opacity-40 transition-opacity" />
+                <motion.div
+                  whileHover={{ scale: 1.05 }}
+                  className="relative h-44 w-44"
                 >
-                  <X className="h-4 w-4" />
-                </button>
-              )}
-            </div>
-            <div className="w-full">
-              <Label htmlFor="profileImage" className="flex items-center gap-2 mb-2">
-                <Camera className="h-4 w-4" /> Upload Photo
-              </Label>
-              <Input
+                  <img
+                    src={
+                      profileImageUrl ||
+                      "https://api.dicebear.com/7.x/avataaars/svg?seed=Felix"
+                    }
+                    alt="Profile"
+                    className="w-full h-full rounded-full object-cover border-4 border-white shadow-lg"
+                  />
+                  {profileImageUrl && (
+                    <button
+                      type="button"
+                      onClick={removeImage}
+                      className="absolute top-2 right-2 bg-rose-500 text-white rounded-full p-1.5 shadow-lg hover:bg-rose-600 transition-all scale-0 group-hover:scale-100"
+                    >
+                      <X className="h-4 w-4" />
+                    </button>
+                  )}
+                  <label
+                    htmlFor="profileImage"
+                    className="absolute bottom-2 right-2 bg-indigo-600 text-white rounded-full p-3 shadow-lg hover:bg-indigo-700 cursor-pointer transition-transform group-hover:rotate-12"
+                  >
+                    <Camera className="h-5 w-5" />
+                  </label>
+                </motion.div>
+              </div>
+
+              <input
                 id="profileImage"
                 type="file"
+                className="hidden"
                 accept="image/*"
                 {...form.register("profileImage")}
                 onChange={(e) => {
                   form.register("profileImage").onChange(e);
                   handleImageChange(e);
                 }}
-                className="w-full cursor-pointer"
               />
-              <p className="text-xs text-gray-500 mt-2">
-                Supported formats: JPG, PNG, GIF. Max size: 2MB
-              </p>
-            </div>
-          </CardContent>
-        </Card>
 
-        {/* Profile Info Card */}
-        <Card>
-          <CardHeader className="pb-4">
-            <div className="flex items-center gap-3">
-              <div className="p-2 rounded-full bg-blue-100">
-                <User className="h-5 w-5 text-blue-600" />
-              </div>
-              <div>
-                <CardTitle>Profile Information</CardTitle>
-                <CardDescription>Update your personal information</CardDescription>
-              </div>
-            </div>
-          </CardHeader>
-
-          <CardContent>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-              <div className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="name" className="flex items-center gap-2">
-                    <User className="h-4 w-4" /> Full Name *
-                  </Label>
-                  <Input {...form.register("name", { required: "Name is required" })} placeholder="Enter your name" />
-                  {form.formState.errors.name && (
-                    <p className="text-red-500 text-sm">{form.formState.errors.name.message}</p>
-                  )}
+              <div className="mt-6 w-full space-y-3">
+                <div className="p-4 bg-slate-50 rounded-2xl text-center">
+                  <p className="text-sm font-bold text-slate-900">
+                    {form.getValues("name") || "Full Name"}
+                  </p>
+                  <p className="text-[10px] text-slate-400 uppercase font-mono mt-1">
+                    ID: {data?.data?._id?.slice(-8)}
+                  </p>
                 </div>
+                <p className="text-[10px] text-center text-slate-400 px-4 leading-relaxed">
+                  Upload a high-quality JPG or PNG. The avatar helps drivers and
+                  riders recognize you easily.
+                </p>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Right Col: Form Details */}
+        <div className="lg:col-span-8">
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+            <Card className="rounded-[2.5rem] border-none shadow-xl shadow-slate-200/60 bg-white p-2">
+              <CardHeader className="pb-4">
+                <div className="flex items-center gap-3">
+                  <div className="p-3 rounded-2xl bg-indigo-50 text-indigo-600">
+                    <User className="h-6 w-6" />
+                  </div>
+                  <div>
+                    <CardTitle className="text-xl font-bold">
+                      Profile Identity
+                    </CardTitle>
+                    <CardDescription>
+                      Public information that others will see
+                    </CardDescription>
+                  </div>
+                </div>
+              </CardHeader>
+              <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-2">
-                  <Label htmlFor="email" className="flex items-center gap-2">
-                    <Mail className="h-4 w-4" /> Email Address *
+                  <Label className="text-xs font-bold uppercase tracking-wide text-slate-500 ml-1">
+                    Full Name
                   </Label>
                   <Input
-                    {...form.register("email", { 
-                      required: "Email is required",
-                      pattern: {
-                        value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
-                        message: "Invalid email address"
-                      }
-                    })}
-                    type="email"
-                    placeholder="Enter your email"
+                    {...form.register("name", { required: "Name is required" })}
+                    className="h-12 rounded-2xl border-slate-100 bg-slate-50/50 focus:bg-white focus:ring-indigo-500 transition-all"
+                    placeholder="Enter full name"
                   />
-                  {form.formState.errors.email && (
-                    <p className="text-red-500 text-sm">{form.formState.errors.email.message}</p>
-                  )}
                 </div>
-              </div>
+                <div className="space-y-2">
+                  <Label className="text-xs font-bold uppercase tracking-wide text-slate-500 ml-1">
+                    Email Address
+                  </Label>
+                  <Input
+                    {...form.register("email", {
+                      required: "Email is required",
+                    })}
+                    className="h-12 rounded-2xl border-slate-100 bg-slate-50/50 focus:bg-white focus:ring-indigo-500 transition-all"
+                    placeholder="Email address"
+                    disabled
+                  />
+                </div>
+              </CardContent>
+            </Card>
 
-              {/* Password */}
-              <div className="pt-4 border-t">
-                <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
-                  <Lock className="h-5 w-5" /> Change Password
-                </h3>
-                <div className="space-y-4">
+            <Card className="rounded-[2.5rem] border-none shadow-xl shadow-slate-200/60 bg-white p-2">
+              <CardHeader className="pb-4">
+                <div className="flex items-center gap-3">
+                  <div className="p-3 rounded-2xl bg-rose-50 text-rose-600">
+                    <Lock className="h-6 w-6" />
+                  </div>
+                  <div>
+                    <CardTitle className="text-xl font-bold">
+                      Security & Credentials
+                    </CardTitle>
+                    <CardDescription>
+                      Keep your password strong and secure
+                    </CardDescription>
+                  </div>
+                </div>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div className="space-y-2">
-                    <Label htmlFor="password">New Password</Label>
+                    <Label className="text-xs font-bold uppercase tracking-wide text-slate-500 ml-1 text-rose-600">
+                      New Password
+                    </Label>
                     <Input
-                      {...form.register("password", { minLength: { value: 6, message: "Password must be at least 6 characters" } })}
+                      {...form.register("password", {
+                        minLength: { value: 6, message: "Min 6 characters" },
+                      })}
                       type="password"
-                      placeholder="Enter new password"
+                      className="h-12 rounded-2xl border-slate-100 bg-slate-50/50 focus:bg-white transition-all"
+                      placeholder="••••••••"
                     />
-                    {form.formState.errors.password && (
-                      <p className="text-red-500 text-sm">{form.formState.errors.password.message}</p>
-                    )}
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="confirmPassword">Confirm Password</Label>
-                    <Input {...form.register("confirmPassword")} type="password" placeholder="Confirm new password" />
-                    {form.formState.errors.confirmPassword && (
-                      <p className="text-red-500 text-sm">{form.formState.errors.confirmPassword.message}</p>
-                    )}
+                    <Label className="text-xs font-bold uppercase tracking-wide text-slate-500 ml-1">
+                      Confirm Secret
+                    </Label>
+                    <Input
+                      {...form.register("confirmPassword")}
+                      type="password"
+                      className="h-12 rounded-2xl border-slate-100 bg-slate-50/50 focus:bg-white transition-all"
+                      placeholder="••••••••"
+                    />
                   </div>
                 </div>
-              </div>
+                <div className="flex items-center gap-2 p-4 bg-emerald-50 rounded-2xl border border-emerald-100">
+                  <ShieldCheck className="text-emerald-600 h-5 w-5" />
+                  <p className="text-[10px] text-emerald-700 font-medium">
+                    Your account data is encrypted using industry-standard
+                    protocols.
+                  </p>
+                </div>
+              </CardContent>
+            </Card>
 
-              <Button type="submit" disabled={isLoading} className="w-full bg-blue-600 hover:bg-blue-700">
-                <Save className="h-4 w-4 mr-2" />
-                {isLoading ? "Updating..." : "Update Profile"}
+            <div className="flex justify-end gap-4 pt-4">
+              <Button
+                type="submit"
+                disabled={isLoading}
+                className="h-14 px-10 rounded-2xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold shadow-lg shadow-indigo-200 transition-all active:scale-95 disabled:opacity-70"
+              >
+                {isLoading ? (
+                  <>
+                    <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                    Synchronizing...
+                  </>
+                ) : (
+                  <>
+                    <Save className="mr-2 h-5 w-5" />
+                    Save All Changes
+                  </>
+                )}
               </Button>
-            </form>
-          </CardContent>
-        </Card>
+            </div>
+          </form>
+        </div>
       </div>
-    </div>
+
+      {isFetching && (
+        <div className="fixed bottom-10 left-1/2 -translate-x-1/2 bg-white/80 backdrop-blur-md px-6 py-3 rounded-full border shadow-2xl flex items-center gap-3 animate-bounce">
+          <Loader2 className="h-4 w-4 animate-spin text-indigo-600" />
+          <span className="text-xs font-bold">Syncing latest data...</span>
+        </div>
+      )}
+    </motion.div>
   );
 }

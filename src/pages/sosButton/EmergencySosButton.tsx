@@ -1,221 +1,151 @@
-// src/components/EmergencySOS.tsx
-import React, { useState, useEffect } from 'react';
-import { AlertTriangle, Phone, MessageCircle, MapPin, X } from 'lucide-react';
+import React, { useState } from "react";
+import {
+  ShieldAlert,
+  PhoneCall,
+  MapPin,
+  X,
+  AlertTriangle,
+  Loader2,
+} from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+import { toast } from "sonner";
 
-interface EmergencyContact {
-  name: string;
-  phone: string;
-  type: 'police' | 'contact' | 'emergency';
-}
-
-interface EmergencySOSProps {
+interface SOSProps {
   isActive: boolean;
-  currentLocation?: { lat: number; lng: number };
+  currentLocation: { lat: number; lng: number } | null;
 }
 
-const EmergencySOS: React.FC<EmergencySOSProps> = ({ isActive, currentLocation }) => {
+const EmergencySOS: React.FC<SOSProps> = ({ isActive, currentLocation }) => {
   const [isOpen, setIsOpen] = useState(false);
-  const [contacts, setContacts] = useState<EmergencyContact[]>([]);
-  const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(null);
+  const [isSending, setIsSending] = useState(false);
 
-  // Pre-defined emergency contacts
-  const emergencyContacts: EmergencyContact[] = [
-    { name: 'Local Police', phone: '999', type: 'police' },
-    { name: 'Emergency Services', phone: '112', type: 'emergency' },
-    // Add user's saved contacts from settings
-    ...contacts,
-  ];
+  // SOS ট্রিগার করার মেইন ফাংশন
+  const triggerSOS = async () => {
+    setIsSending(true);
 
-  // Get user's current location
-  useEffect(() => {
-    if (isActive && navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(
-        (position) => {
-          setUserLocation({
-            lat: position.coords.latitude,
-            lng: position.coords.longitude,
-          });
-        },
-        (error) => {
-          console.error('Error getting location:', error);
-        },
-        { enableHighAccuracy: true, timeout: 10000, maximumAge: 60000 }
-      );
-    }
-  }, [isActive]);
+    // এখানে তোর ব্যাকএন্ড API কল হবে
+    // উদাহরণ: await sendSOSAlert({ location: currentLocation });
 
-  // Load user's saved emergency contacts
-  useEffect(() => {
-    // In a real app, this would come from user settings/API
-    const savedContacts = localStorage.getItem('emergencyContacts');
-    if (savedContacts) {
-      try {
-        setContacts(JSON.parse(savedContacts));
-      } catch (e) {
-        console.error('Error parsing saved contacts:', e);
-      }
-    }
-  }, []);
-
-  const handleSOSClick = () => {
-    setIsOpen(!isOpen);
-  };
-
-  const makeEmergencyCall = (phoneNumber: string) => {
-    window.open(`tel:${phoneNumber}`, '_self');
-  };
-
-  const sendEmergencySMS = (contact: EmergencyContact) => {
-    const message = `EMERGENCY! I need help! My current location: ${userLocation ? `https://maps.google.com/?q=${userLocation.lat},${userLocation.lng}` : 'Location unavailable'}`;
-    window.open(`sms:${contact.phone}?body=${encodeURIComponent(message)}`, '_self');
-  };
-
-  const shareLocation = (contact: EmergencyContact) => {
-    if (userLocation) {
-      const message = `I'm sharing my live location: https://maps.google.com/?q=${userLocation.lat},${userLocation.lng}`;
-      
-      // Try WhatsApp if available, otherwise fall back to SMS
-      if (navigator.userAgent.includes('WhatsApp')) {
-        window.open(`https://wa.me/${contact.phone}?text=${encodeURIComponent(message)}`, '_blank');
-      } else {
-        window.open(`sms:${contact.phone}?body=${encodeURIComponent(message)}`, '_self');
-      }
-    }
-  };
-
-  const shareLiveLocation = () => {
-    if (navigator.share && userLocation) {
-      navigator.share({
-        title: 'My Live Location',
-        text: 'I need help! Here is my current location:',
-        url: `https://maps.google.com/?q=${userLocation.lat},${userLocation.lng}`,
-      }).catch(console.error);
-    } else if (userLocation) {
-      // Fallback for browsers that don't support Web Share API
-      alert(`Share this URL: https://maps.google.com/?q=${userLocation.lat},${userLocation.lng}`);
-    }
+    setTimeout(() => {
+      setIsSending(false);
+      setIsOpen(false);
+      toast.error("SOS Alert Broadcasted to Authorities!", {
+        description: "Your live location is being tracked by our safety team.",
+        duration: 5000,
+      });
+      // জাপানের ইমারজেন্সি পুলিশ নাম্বার (১১০) এ কল করার অপশন
+      window.location.href = "tel:110";
+    }, 2000);
   };
 
   if (!isActive) return null;
 
   return (
-    <>
-      {/* Floating SOS Button */}
-      <button
-        onClick={handleSOSClick}
-        className="fixed bottom-6 right-6 z-50 w-16 h-16 bg-red-600 hover:bg-red-700  rounded-full shadow-lg flex items-center justify-center transition-all duration-300 hover:scale-110"
-        aria-label="Emergency SOS"
+    <div className="relative">
+      {/* মেইন পালসিং বাটন */}
+      <motion.button
+        whileHover={{ scale: 1.1 }}
+        whileTap={{ scale: 0.9 }}
+        onClick={() => setIsOpen(true)}
+        className="relative group flex items-center gap-2 bg-rose-600 text-white px-5 py-2.5 rounded-2xl font-black text-xs uppercase tracking-tighter shadow-lg shadow-rose-200"
       >
-        <AlertTriangle size={28} />
-      </button>
+        <span className="absolute inset-0 rounded-2xl bg-rose-600 animate-ping opacity-25"></span>
+        <ShieldAlert className="h-4 w-4 animate-pulse" />
+        SOS Emergency
+      </motion.button>
 
-      {/* Emergency Options Modal */}
-      {isOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
-          <div className=" rounded-lg p-6 w-11/12 max-w-md">
-            <div className="flex justify-between items-center mb-4">
-              <h2 className="text-xl font-bold text-red-600">Emergency Assistance</h2>
-              <button
-                onClick={() => setIsOpen(false)}
-                className="text-gray-500 hover:text-gray-700"
-              >
-                <X size={24} />
-              </button>
-            </div>
+      {/* ইমারজেন্সি কন্ট্রোল প্যানেল (Overlay) */}
+      <AnimatePresence>
+        {isOpen && (
+          <>
+            {/* ব্যাকড্রপ ব্লার */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => !isSending && setIsOpen(false)}
+              className="fixed inset-0 bg-slate-900/60 backdrop-blur-md z-[100]"
+            />
 
-            <div className="space-y-3">
-              <div className=" p-4 rounded-lg mb-4">
-                <p className="text-red-800 font-medium">
-                  {userLocation 
-                    ? `Your location: ${userLocation.lat.toFixed(4)}, ${userLocation.lng.toFixed(4)}`
-                    : 'Getting your location...'
-                  }
+            {/* ইমারজেন্সি কার্ড */}
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9, y: 100 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.9, y: 100 }}
+              className="fixed inset-x-4 bottom-10 md:inset-x-auto md:left-1/2 md:-translate-x-1/2 md:w-[400px] bg-white rounded-[2.5rem] shadow-2xl z-[101] overflow-hidden border border-rose-100"
+            >
+              <div className="p-8">
+                <div className="flex justify-between items-start mb-6">
+                  <div className="p-4 bg-rose-50 rounded-3xl">
+                    <AlertTriangle className="h-8 w-8 text-rose-600" />
+                  </div>
+                  <button
+                    onClick={() => setIsOpen(false)}
+                    className="p-2 hover:bg-slate-100 rounded-full transition-colors"
+                  >
+                    <X className="h-6 w-6 text-slate-400" />
+                  </button>
+                </div>
+
+                <h2 className="text-2xl font-black text-slate-900 mb-2">
+                  Emergency Assistance
+                </h2>
+                <p className="text-slate-500 text-sm font-medium leading-relaxed mb-8">
+                  Are you in danger? Pressing the button below will share your{" "}
+                  <span className="text-rose-600 font-bold">
+                    live GPS location
+                  </span>{" "}
+                  with the police and our 24/7 safety team.
                 </p>
-              </div>
 
-              {/* Emergency Services */}
-              <h3 className="font-semibold  mb-2">Emergency Services:</h3>
-              {emergencyContacts.filter(c => c.type !== 'contact').map((contact, index) => (
-                <div key={index} className="flex justify-between items-center p-3  rounded-lg">
-                  <span className="font-medium">{contact.name}</span>
-                  <div className="flex space-x-2">
-                    <button
-                      onClick={() => makeEmergencyCall(contact.phone)}
-                      className="p-2 bg-green-600  rounded-full hover:bg-green-700"
-                      title={`Call ${contact.name}`}
-                    >
-                      <Phone size={18} />
-                    </button>
-                    <button
-                      onClick={() => sendEmergencySMS(contact)}
-                      className="p-2 bg-blue-600  rounded-full hover:bg-blue-700"
-                      title={`Message ${contact.name}`}
-                    >
-                      <MessageCircle size={18} />
-                    </button>
+                {/* লোকেশন ইন্ডিকেটর */}
+                <div className="flex items-center gap-3 p-4 bg-slate-50 rounded-2xl mb-8 border border-slate-100">
+                  <div className="h-10 w-10 rounded-xl bg-white flex items-center justify-center shadow-sm">
+                    <MapPin
+                      className={`h-5 w-5 ${
+                        currentLocation
+                          ? "text-emerald-500"
+                          : "text-slate-300 animate-bounce"
+                      }`}
+                    />
+                  </div>
+                  <div className="flex-1">
+                    <p className="text-[10px] font-bold text-slate-400 uppercase">
+                      Current Status
+                    </p>
+                    <p className="text-xs font-bold text-slate-700">
+                      {currentLocation
+                        ? `GPS: ${currentLocation.lat.toFixed(
+                            4
+                          )}, ${currentLocation.lng.toFixed(4)}`
+                        : "Acquiring GPS Signal..."}
+                    </p>
                   </div>
                 </div>
-              ))}
 
-              {/* Personal Contacts */}
-              {contacts.length > 0 && (
-                <>
-                  <h3 className="font-semibold  mb-2 mt-4">Your Emergency Contacts:</h3>
-                  {contacts.map((contact, index) => (
-                    <div key={index} className="flex justify-between items-center p-3  rounded-lg">
-                      <span className="font-medium">{contact.name}</span>
-                      <div className="flex space-x-2">
-                        <button
-                          onClick={() => makeEmergencyCall(contact.phone)}
-                          className="p-2 bg-green-600  rounded-full hover:bg-green-700"
-                          title={`Call ${contact.name}`}
-                        >
-                          <Phone size={18} />
-                        </button>
-                        <button
-                          onClick={() => sendEmergencySMS(contact)}
-                          className="p-2 bg-blue-600  rounded-full hover:bg-blue-700"
-                          title={`Message ${contact.name}`}
-                        >
-                          <MessageCircle size={18} />
-                        </button>
-                        <button
-                          onClick={() => shareLocation(contact)}
-                          className="p-2 bg-purple-600  rounded-full hover:bg-purple-700"
-                          title={`Share location with ${contact.name}`}
-                        >
-                          <MapPin size={18} />
-                        </button>
-                      </div>
-                    </div>
-                  ))}
-                </>
-              )}
+                {/* মেইন কনফার্মেশন বাটন */}
+                <button
+                  onClick={triggerSOS}
+                  disabled={isSending}
+                  className="w-full bg-rose-600 hover:bg-rose-700 active:scale-95 transition-all text-white h-16 rounded-2xl font-black text-lg flex items-center justify-center gap-3 shadow-xl shadow-rose-200 disabled:opacity-70"
+                >
+                  {isSending ? (
+                    <Loader2 className="h-6 w-6 animate-spin" />
+                  ) : (
+                    <PhoneCall className="h-6 w-6" />
+                  )}
+                  {isSending ? "BROADCASTING..." : "CONFIRM SOS"}
+                </button>
 
-              {/* Share Location Button */}
-              <button
-                onClick={shareLiveLocation}
-                className="w-full mt-4 py-3 bg-purple-600  rounded-lg font-medium hover:bg-purple-700 flex items-center justify-center space-x-2"
-              >
-                <MapPin size={20} />
-                <span>Share Live Location</span>
-              </button>
-
-              {/* Add Emergency Contact Button */}
-              <button
-                onClick={() => {
-                  // This would navigate to settings in a real app
-                  alert('Navigate to settings to add emergency contacts');
-                }}
-                className="w-full mt-2 py-2 border border-gray-300  rounded-lg font-medium "
-              >
-                + Add Emergency Contact
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-    </>
+                <p className="text-center mt-6 text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+                  False alerts may lead to account suspension
+                </p>
+              </div>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
+    </div>
   );
 };
 

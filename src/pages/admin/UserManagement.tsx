@@ -1,12 +1,10 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable @typescript-eslint/no-explicit-any */
-// src/pages/admin/UserManagement.tsx
 import { useState } from "react";
-import { 
-  useBlockUserMutation, 
-  useDeleteUserMutation, 
-  useGetUsersQuery, 
-  useUnblockUserMutation 
+import {
+  useBlockUserMutation,
+  useDeleteUserMutation,
+  useGetUsersQuery,
+  useUnblockUserMutation,
 } from "@/redux/admin/admin.api";
 import type { IUser } from "@/types/user.interface";
 import {
@@ -18,38 +16,39 @@ import {
   UserCheck,
   UserX,
   Trash2,
-  Eye,
-  Edit,
-  Loader2,
+  RefreshCw,
   ChevronDown,
   ChevronUp,
-  RefreshCw
+  Filter,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
+import { toast } from "sonner";
+import { motion, AnimatePresence } from "framer-motion";
 
 export default function UserManagement() {
-  const { data: usersResponse, isLoading, refetch } = useGetUsersQuery(undefined);
+  const {
+    data: usersResponse,
+    isLoading,
+    refetch,
+  } = useGetUsersQuery(undefined);
   const [blockUser] = useBlockUserMutation();
   const [unblockUser] = useUnblockUserMutation();
   const [deleteUser] = useDeleteUserMutation();
-  
+
   const [searchTerm, setSearchTerm] = useState("");
-  const [statusFilter, setStatusFilter] = useState<"all" | "active" | "blocked">("all");
+  const [statusFilter, setStatusFilter] = useState<
+    "all" | "active" | "blocked"
+  >("all");
   const [roleFilter, setRoleFilter] = useState<string>("all");
   const [sortField, setSortField] = useState<"name" | "email" | "role">("name");
   const [sortDirection, setSortDirection] = useState<"asc" | "desc">("asc");
@@ -58,27 +57,21 @@ export default function UserManagement() {
 
   const users = usersResponse?.data?.data || [];
 
-  // Filter and sort users
   const filteredUsers = users
     .filter((user: IUser) => {
-      const matchesSearch = user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                           user.email.toLowerCase().includes(searchTerm.toLowerCase());
-      const matchesStatus = statusFilter === "all" || 
-                           (statusFilter === "active" && !user.isBlocked) ||
-                           (statusFilter === "blocked" && user.isBlocked);
+      const matchesSearch =
+        user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        user.email.toLowerCase().includes(searchTerm.toLowerCase());
+      const matchesStatus =
+        statusFilter === "all" ||
+        (statusFilter === "active" && !user.isBlocked) ||
+        (statusFilter === "blocked" && user.isBlocked);
       const matchesRole = roleFilter === "all" || user.role === roleFilter;
-      
       return matchesSearch && matchesStatus && matchesRole;
     })
     .sort((a: IUser, b: IUser) => {
-      let aValue = a[sortField];
-      let bValue = b[sortField];
-      
-      if (sortField === "name") {
-        aValue = a.name.toLowerCase();
-        bValue = b.name.toLowerCase();
-      }
-      
+      let aValue = a[sortField].toLowerCase();
+      let bValue = b[sortField].toLowerCase();
       if (aValue < bValue) return sortDirection === "asc" ? -1 : 1;
       if (aValue > bValue) return sortDirection === "asc" ? 1 : -1;
       return 0;
@@ -93,348 +86,390 @@ export default function UserManagement() {
     }
   };
 
-  const handleBlockUser = async (userId: string) => {
+  const handleBlockAction = async (user: IUser) => {
     try {
-      await blockUser(userId).unwrap();
-      alert("User blocked successfully");
+      if (user.isBlocked) {
+        await unblockUser(user._id).unwrap();
+        toast.success(`${user.name} has been unblocked`);
+      } else {
+        await blockUser(user._id).unwrap();
+        toast.error(`${user.name} has been blocked`);
+      }
       refetch();
     } catch (error) {
-      alert("Failed to block user");
-    }
-  };
-
-  const handleUnblockUser = async (userId: string) => {
-    try {
-      await unblockUser(userId).unwrap();
-      alert("User unblocked successfully");
-      refetch();
-    } catch (error) {
-      alert("Failed to unblock user");
+      toast.error("Operation failed");
     }
   };
 
   const handleDeleteUser = async () => {
     if (!selectedUser) return;
-    
     try {
       await deleteUser(selectedUser._id).unwrap();
-      alert("User deleted successfully");
+      toast.success("User permanently deleted");
       refetch();
       setDeleteDialogOpen(false);
-      setSelectedUser(null);
     } catch (error) {
-      alert("Failed to delete user");
+      toast.error("Delete failed");
     }
-  };
-
-  const getRoleBadge = (role: string) => {
-    // Convert backend role values to frontend display values
-    const normalizedRole = role.toUpperCase();
-    
-    const roleConfig = {
-      'ADMIN': { variant: "destructive" as const, text: "Admin" },
-      'RIDER': { variant: "secondary" as const, text: "Rider" },
-      'DRIVER': { variant: "secondary" as const, text: "Driver" },
-      'USER': { variant: "outline" as const, text: "User" }
-    };
-    
-    const config = roleConfig[normalizedRole as keyof typeof roleConfig] || { 
-      variant: "outline" as const, 
-      text: role 
-    };
-    
-    return <Badge variant={config.variant}>{config.text}</Badge>;
   };
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
+      <div className="flex flex-col items-center justify-center min-h-[400px]">
+        <RefreshCw className="h-10 w-10 animate-spin text-indigo-600 mb-4" />
+        <p className="text-slate-500 font-medium">Fetching secure data...</p>
       </div>
     );
   }
 
   return (
-    <div className="container mx-auto p-6 space-y-6">
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+    <div className="p-6 space-y-8 bg-[#fafafa] dark:bg-slate-950 min-h-screen">
+      {/* Header Section */}
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">User Management</h1>
-          <p className="text-muted-foreground mt-1">
-            Manage all users and their permissions
+          <h1 className="text-3xl font-black tracking-tight text-slate-900 dark:text-white">
+            User Intelligence
+          </h1>
+          <p className="text-slate-500 mt-1">
+            Audit and regulate system access levels.
           </p>
         </div>
-        <Button onClick={() => refetch()} variant="outline" className="gap-2">
-          <RefreshCw className="h-4 w-4" />
-          Refresh
+        <Button
+          onClick={() => refetch()}
+          variant="outline"
+          className="rounded-xl border-slate-200 gap-2 shadow-sm"
+        >
+          <RefreshCw className="h-4 w-4" /> Sync Data
         </Button>
       </div>
 
-      {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Users</CardTitle>
-            <User className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{users.length}</div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Active Users</CardTitle>
-            <UserCheck className="h-4 w-4 text-green-500" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-green-600">
-              {users.filter((u: IUser) => !u.isBlocked).length}
-            </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Blocked Users</CardTitle>
-            <UserX className="h-4 w-4 text-red-500" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-red-600">
-              {users.filter((u: IUser) => u.isBlocked).length}
-            </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Admins</CardTitle>
-            <Shield className="h-4 w-4 text-blue-500" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-blue-600">
-              {users.filter((u: IUser) => u.role === "ADMIN").length}
-            </div>
-          </CardContent>
-        </Card>
+      {/* Stats Section */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+        {[
+          {
+            title: "Total Fleet",
+            val: users.length,
+            icon: User,
+            color: "indigo",
+          },
+          {
+            title: "Operational",
+            val: users.filter((u: any) => !u.isBlocked).length,
+            icon: UserCheck,
+            color: "emerald",
+          },
+          {
+            title: "Restricted",
+            val: users.filter((u: any) => u.isBlocked).length,
+            icon: UserX,
+            color: "rose",
+          },
+          {
+            title: "System Admins",
+            val: users.filter((u: any) => u.role === "ADMIN").length,
+            icon: Shield,
+            color: "blue",
+          },
+        ].map((stat, i) => (
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: i * 0.1 }}
+            key={i}
+          >
+            <Card className="rounded-[1.5rem] border-none shadow-sm overflow-hidden">
+              <CardContent className="p-6 flex items-center justify-between">
+                <div>
+                  <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">
+                    {stat.title}
+                  </p>
+                  <p className="text-2xl font-black mt-1">{stat.val}</p>
+                </div>
+                <div
+                  className={`p-3 rounded-2xl bg-${stat.color}-50 dark:bg-slate-800 text-${stat.color}-600`}
+                >
+                  <stat.icon size={22} />
+                </div>
+              </CardContent>
+            </Card>
+          </motion.div>
+        ))}
       </div>
 
-      {/* Filters and Search */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Filters</CardTitle>
-          <CardDescription>Filter users by different criteria</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="flex flex-col sm:flex-row gap-4">
+      {/* Control Bar */}
+      <Card className="rounded-[1.5rem] border-slate-100 shadow-sm">
+        <CardContent className="p-4">
+          <div className="flex flex-col lg:flex-row gap-4">
             <div className="relative flex-1">
-              <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
               <Input
-                type="search"
-                placeholder="Search users..."
-                className="pl-8"
+                placeholder="Search by name or email..."
+                className="pl-10 rounded-xl border-slate-100 bg-slate-50/50 focus-visible:ring-indigo-500"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
               />
             </div>
-            <select
-              className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
-              value={statusFilter}
-              onChange={(e) => setStatusFilter(e.target.value as any)}
-            >
-              <option value="all">All Status</option>
-              <option value="active">Active</option>
-              <option value="blocked">Blocked</option>
-            </select>
-            <select
-              className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
-              value={roleFilter}
-              onChange={(e) => setRoleFilter(e.target.value)}
-            >
-              <option value="all">All Roles</option>
-              <option value="ADMIN">Admin</option>
-              <option value="DRIVER">Driver</option>
-              <option value="RIDER">Rider</option>
-              <option value="USER">User</option>
-            </select>
+            <div className="flex flex-wrap gap-3">
+              <div className="flex items-center gap-2 bg-slate-50 p-1 rounded-xl border border-slate-100">
+                <Filter size={14} className="ml-2 text-slate-400" />
+                <select
+                  className="bg-transparent text-sm font-semibold focus:outline-none p-1.5"
+                  value={statusFilter}
+                  onChange={(e) => setStatusFilter(e.target.value as any)}
+                >
+                  <option value="all">All Status</option>
+                  <option value="active">Active</option>
+                  <option value="blocked">Blocked</option>
+                </select>
+              </div>
+              <div className="flex items-center gap-2 bg-slate-50 p-1 rounded-xl border border-slate-100">
+                <Shield size={14} className="ml-2 text-slate-400" />
+                <select
+                  className="bg-transparent text-sm font-semibold focus:outline-none p-1.5"
+                  value={roleFilter}
+                  onChange={(e) => setRoleFilter(e.target.value)}
+                >
+                  <option value="all">All Roles</option>
+                  <option value="ADMIN">Admin</option>
+                  <option value="DRIVER">Driver</option>
+                  <option value="RIDER">Rider</option>
+                </select>
+              </div>
+            </div>
           </div>
         </CardContent>
       </Card>
 
-      {/* Users Table */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Users</CardTitle>
-          <CardDescription>
-            {filteredUsers.length} user(s) found
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
+      {/* Main Table */}
+      <Card className="rounded-[2rem] border-slate-100 shadow-sm overflow-hidden bg-white">
+        <CardContent className="p-0">
           <div className="overflow-x-auto">
-            <table className="w-full border-collapse">
+            <table className="w-full text-left">
               <thead>
-                <tr className="border-b">
-                  <th 
-                    className="h-12 px-4 text-left align-middle font-medium cursor-pointer hover:bg-accent"
+                <tr className="bg-slate-50/50 text-slate-500 text-xs font-bold uppercase tracking-wider border-b border-slate-100">
+                  <th
+                    className="px-6 py-5 cursor-pointer hover:text-indigo-600 transition-colors"
                     onClick={() => handleSort("name")}
                   >
-                    <div className="flex items-center gap-1">
-                      User
-                      {sortField === "name" && (
-                        sortDirection === "asc" ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />
-                      )}
+                    <div className="flex items-center gap-2">
+                      User{" "}
+                      {sortField === "name" &&
+                        (sortDirection === "asc" ? (
+                          <ChevronUp size={14} />
+                        ) : (
+                          <ChevronDown size={14} />
+                        ))}
                     </div>
                   </th>
-                  <th 
-                    className="h-12 px-4 text-left align-middle font-medium cursor-pointer hover:bg-accent"
+                  <th
+                    className="px-6 py-5 cursor-pointer hover:text-indigo-600 transition-colors"
                     onClick={() => handleSort("email")}
                   >
-                    <div className="flex items-center gap-1">
-                      Email
-                      {sortField === "email" && (
-                        sortDirection === "asc" ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />
-                      )}
+                    <div className="flex items-center gap-2">
+                      Email{" "}
+                      {sortField === "email" &&
+                        (sortDirection === "asc" ? (
+                          <ChevronUp size={14} />
+                        ) : (
+                          <ChevronDown size={14} />
+                        ))}
                     </div>
                   </th>
-                  <th 
-                    className="h-12 px-4 text-left align-middle font-medium cursor-pointer hover:bg-accent"
-                    onClick={() => handleSort("role")}
-                  >
-                    <div className="flex items-center gap-1">
-                      Role
-                      {sortField === "role" && (
-                        sortDirection === "asc" ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />
-                      )}
-                    </div>
-                  </th>
-                  <th className="h-12 px-4 text-left align-middle font-medium">Status</th>
-                  <th className="h-12 px-4 text-right align-middle font-medium">Actions</th>
+                  <th className="px-6 py-5">Role</th>
+                  <th className="px-6 py-5">Access Status</th>
+                  <th className="px-6 py-5 text-right">Actions</th>
                 </tr>
               </thead>
-              <tbody>
-                {filteredUsers.map((user: IUser) => (
-                  <tr key={user._id} className="border-b hover:bg-muted/50">
-                    <td className="p-4 align-middle">
-                      <div className="flex items-center gap-3">
-                        <div className="flex-shrink-0">
-                          <div className="h-10 w-10 rounded-full bg-gradient-to-r from-blue-500 to-purple-600 flex items-center justify-center text-white font-semibold">
-                            {user.name.charAt(0).toUpperCase()}
+              <tbody className="divide-y divide-slate-50">
+                <AnimatePresence>
+                  {filteredUsers.map((user: IUser) => (
+                    <motion.tr
+                      layout
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      exit={{ opacity: 0 }}
+                      key={user._id}
+                      className="hover:bg-slate-50/80 transition-colors group"
+                    >
+                      <td className="px-6 py-4">
+                        <div className="flex items-center gap-4">
+                          <div className="h-10 w-10 rounded-2xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white font-bold shadow-md">
+                            {user.name.charAt(0)}
+                          </div>
+                          <div>
+                            <p className="font-bold text-slate-900">
+                              {user.name}
+                            </p>
+                            <p className="text-[10px] text-slate-400 font-mono tracking-tighter uppercase">
+                              ID: {user._id.slice(-8)}
+                            </p>
                           </div>
                         </div>
-                        <div>
-                          <div className="font-medium">{user.name}</div>
-                          <div className="text-sm text-muted-foreground">
-                            ID: {user._id.slice(-8)}
-                          </div>
+                      </td>
+                      <td className="px-6 py-4">
+                        <div className="flex items-center gap-2 text-slate-600 text-sm font-medium">
+                          <Mail className="h-3 w-3 text-slate-400" />
+                          {user.email}
                         </div>
-                      </div>
-                    </td>
-                    <td className="p-4 align-middle">
-                      <div className="flex items-center gap-2">
-                        <Mail className="h-4 w-4 text-muted-foreground" />
-                        {user.email}
-                      </div>
-                    </td>
-                    <td className="p-4 align-middle">
-                      {getRoleBadge(user.role)}
-                    </td>
-                    <td className="p-4 align-middle">
-                      <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold ${
-                        user.isBlocked ? "bg-red-100 text-red-800" : "bg-green-100 text-green-800"
-                      }`}>
-                        {user.isBlocked ? "Blocked" : "Active"}
-                      </span>
-                    </td>
-                    <td className="p-4 align-middle text-right">
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button variant="ghost" className="h-8 w-8 p-0">
-                            <MoreVertical className="h-4 w-4" />
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                          {/* <DropdownMenuItem>
-                            <Eye className="h-4 w-4 mr-2" />
-                            View Details
-                          </DropdownMenuItem> */}
-                          {/* <DropdownMenuItem>
-                            <Edit className="h-4 w-4 mr-2" />
-                            Edit User
-                          </DropdownMenuItem> */}
-                          {user.isBlocked ? (
-                            <DropdownMenuItem onClick={() => handleUnblockUser(user._id)}>
-                              <UserCheck className="h-4 w-4 mr-2" />
-                              Unblock User
-                            </DropdownMenuItem>
-                          ) : (
-                            <DropdownMenuItem onClick={() => handleBlockUser(user._id)}>
-                              <UserX className="h-4 w-4 mr-2" />
-                              Block User
-                            </DropdownMenuItem>
-                          )}
-                          <DropdownMenuItem
-                            className="text-red-600"
-                            onClick={() => {
-                              setSelectedUser(user);
-                              setDeleteDialogOpen(true);
-                            }}
+                      </td>
+                      <td className="px-6 py-4">
+                        <Badge
+                          className={`rounded-lg px-2 py-0.5 shadow-none border-none capitalize ${
+                            user.role === "ADMIN"
+                              ? "bg-orange-100 text-orange-600"
+                              : "bg-slate-100 text-slate-600"
+                          }`}
+                        >
+                          {user.role.toLowerCase()}
+                        </Badge>
+                      </td>
+                      <td className="px-6 py-4">
+                        <div className="flex items-center gap-2">
+                          <div
+                            className={`h-2 w-2 rounded-full ${
+                              user.isBlocked
+                                ? "bg-rose-500 animate-pulse"
+                                : "bg-emerald-500"
+                            }`}
+                          />
+                          <span
+                            className={`text-xs font-bold ${
+                              user.isBlocked
+                                ? "text-rose-600"
+                                : "text-emerald-600"
+                            }`}
                           >
-                            <Trash2 className="h-4 w-4 mr-2" />
-                            Delete User
-                          </DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
-                    </td>
-                  </tr>
-                ))}
+                            {user.isBlocked ? "Blocked" : "Active"}
+                          </span>
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 text-right">
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button
+                              variant="ghost"
+                              className="h-9 w-9 p-0 rounded-xl hover:bg-slate-200"
+                            >
+                              <MoreVertical className="h-4 w-4" />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent
+                            align="end"
+                            className="w-48 rounded-2xl p-2"
+                          >
+                            <DropdownMenuItem
+                              className={`rounded-xl gap-2 font-medium ${
+                                user.isBlocked
+                                  ? "text-emerald-600"
+                                  : "text-amber-600"
+                              }`}
+                              onClick={() => handleBlockAction(user)}
+                            >
+                              {user.isBlocked ? (
+                                <UserCheck size={16} />
+                              ) : (
+                                <UserX size={16} />
+                              )}
+                              {user.isBlocked
+                                ? "Restore Access"
+                                : "Restrict User"}
+                            </DropdownMenuItem>
+                            <DropdownMenuSeparator />
+                            <DropdownMenuItem
+                              className="text-rose-600 rounded-xl gap-2 font-medium focus:bg-rose-50"
+                              onClick={() => {
+                                setSelectedUser(user);
+                                setDeleteDialogOpen(true);
+                              }}
+                            >
+                              <Trash2 size={16} /> Delete Forever
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      </td>
+                    </motion.tr>
+                  ))}
+                </AnimatePresence>
               </tbody>
             </table>
           </div>
 
           {filteredUsers.length === 0 && (
-            <div className="text-center py-12">
-              <User className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-              <h3 className="text-lg font-medium">No users found</h3>
-              <p className="text-muted-foreground mt-1">
-                Try adjusting your search or filter criteria
+            <div className="py-20 text-center">
+              <div className="bg-slate-50 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-4">
+                <UserX className="h-10 w-10 text-slate-300" />
+              </div>
+              <h3 className="text-lg font-bold text-slate-900">
+                No Intelligence Found
+              </h3>
+              <p className="text-slate-500 text-sm mt-1 max-w-xs mx-auto">
+                We couldn't find any users matching your current security
+                filters.
               </p>
+              <Button
+                onClick={() => {
+                  setSearchTerm("");
+                  setStatusFilter("all");
+                  setRoleFilter("all");
+                }}
+                variant="link"
+                className="text-indigo-600 mt-2"
+              >
+                Clear all filters
+              </Button>
             </div>
           )}
         </CardContent>
       </Card>
 
-      {/* Delete Confirmation Dialog */}
+      {/* Delete Confirmation UI - Modern Overlay */}
       {deleteDialogOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center">
-          {/* Backdrop */}
-          <div 
-            className="fixed inset-0 bg-black/80 animate-in fade-in-0"
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm"
             onClick={() => setDeleteDialogOpen(false)}
           />
-          
-          {/* Dialog Content */}
-          <div className="fixed left-[50%] top-[50%] z-50 grid w-full max-w-lg translate-x-[-50%] translate-y-[-50%] gap-4 border bg-white p-6 shadow-lg rounded-lg">
-            {/* Header */}
-            <div className="flex flex-col space-y-2">
-              <h2 className="text-lg font-semibold">Are you sure?</h2>
-              <p className="text-sm text-gray-600">
-                This action cannot be undone. This will permanently delete the user
-                account for {selectedUser?.name} ({selectedUser?.email}).
+          <motion.div
+            initial={{ scale: 0.9, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            className="relative bg-white dark:bg-slate-900 w-full max-w-md rounded-[2.5rem] p-8 shadow-2xl overflow-hidden"
+          >
+            <div className="absolute top-0 right-0 p-8 opacity-5">
+              <Trash2 size={120} />
+            </div>
+            <div className="relative">
+              <div className="h-14 w-14 bg-rose-100 text-rose-600 rounded-2xl flex items-center justify-center mb-6">
+                <Shield size={28} />
+              </div>
+              <h2 className="text-2xl font-black text-slate-900 dark:text-white">
+                Security Override
+              </h2>
+              <p className="text-slate-500 mt-3 leading-relaxed">
+                You are about to permanently purge{" "}
+                <span className="font-bold text-slate-900 dark:text-white">
+                  {selectedUser?.name}
+                </span>{" "}
+                from the system. This action is irreversible.
               </p>
+              <div className="flex flex-col sm:flex-row gap-3 mt-8">
+                <Button
+                  variant="outline"
+                  onClick={() => setDeleteDialogOpen(false)}
+                  className="flex-1 rounded-2xl h-12 border-slate-200"
+                >
+                  Abort Mission
+                </Button>
+                <Button
+                  onClick={handleDeleteUser}
+                  className="flex-1 rounded-2xl h-12 bg-rose-600 hover:bg-rose-700 shadow-lg shadow-rose-200"
+                >
+                  Confirm Purge
+                </Button>
+              </div>
             </div>
-
-            {/* Footer */}
-            <div className="flex flex-col-reverse sm:flex-row sm:justify-end sm:space-x-2">
-              <button
-                onClick={() => setDeleteDialogOpen(false)}
-                className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 mt-2 sm:mt-0"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={handleDeleteUser}
-                className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700"
-              >
-                Delete
-              </button>
-            </div>
-          </div>
+          </motion.div>
         </div>
       )}
     </div>

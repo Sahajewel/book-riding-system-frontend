@@ -1,22 +1,35 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-// src/pages/rider/RequestRide.tsx
 import React, { useState, useEffect } from "react";
 import { useRequestRideMutation } from "@/redux/features/rider/rider.api";
 import { loadStripe } from "@stripe/stripe-js";
-import { Elements, CardElement, useStripe, useElements } from "@stripe/react-stripe-js";
+import {
+  Elements,
+  useStripe,
+  useElements,
+  CardNumberElement,
+  CardExpiryElement,
+  CardCvcElement,
+} from "@stripe/react-stripe-js";
 import { toast } from "sonner";
-import { z } from "zod";
+import { motion } from "framer-motion";
+import {
+  MapPin,
+  CircleDot,
+  CreditCard,
+  Banknote,
+  ArrowRight,
+  ChevronLeft,
+  Loader2,
+  Car,
+} from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 
-// ✅ Load Stripe
-const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY || "");
+const stripePromise = loadStripe(
+  import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY || ""
+);
 
-// ✅ Zod schema for frontend validation
-const rideSchema = z.object({
-  pickupLocation: z.string().min(1, "Pickup location is required"),
-  dropoffLocation: z.string().min(1, "Dropoff location is required"),
-});
-
-// Fare estimation based on distance (mock implementation)
+// অরিজিনাল ক্যালকুলেশন লজিক
 const calculateFare = (pickup: string, dropoff: string): number => {
   const baseFare = 50;
   const distanceRate = 15;
@@ -24,44 +37,44 @@ const calculateFare = (pickup: string, dropoff: string): number => {
   return baseFare + distance * distanceRate;
 };
 
-// Payment form component
-const PaymentForm = ({
-  fare,
-  onSuccess,
-}: {
-  fare: number;
-  onSuccess: () => void;
-}) => {
+// স্টাইল অবজেক্ট যা সব ইনপুটে শেয়ার হবে
+const elementOptions = {
+  style: {
+    base: {
+      fontSize: "18px",
+      color: "#1e293b",
+      fontFamily: "Inter, sans-serif",
+      "::placeholder": { color: "#94a3b8" },
+    },
+    invalid: { color: "#ef4444" },
+  },
+};
+
+const PaymentForm = ({ fare, onSuccess, onBack }: any) => {
   const stripe = useStripe();
   const elements = useElements();
   const [isProcessing, setIsProcessing] = useState(false);
 
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
-    if (!stripe || !elements) {
-      toast.error("Stripe hasn't loaded yet");
-      return;
-    }
+    if (!stripe || !elements) return;
 
     setIsProcessing(true);
-
     try {
-      const cardElement = elements.getElement(CardElement);
-      if (!cardElement) throw new Error("Card element not found");
+      const cardNumber = elements.getElement(CardNumberElement);
+      if (!cardNumber) throw new Error("Card element not found");
 
-      const { error: paymentMethodError } = await stripe.createPaymentMethod({
+      const { error } = await stripe.createPaymentMethod({
         type: "card",
-        card: cardElement,
+        card: cardNumber,
       });
 
-      if (paymentMethodError) {
-        toast.error(paymentMethodError.message || "Payment error");
+      if (error) {
+        toast.error(error.message);
         return;
       }
 
-      // Simulate payment processing
       await new Promise((resolve) => setTimeout(resolve, 2000));
-      toast.success("Payment processed successfully!");
       onSuccess();
     } catch (err: any) {
       toast.error(err.message || "Payment failed");
@@ -71,154 +84,230 @@ const PaymentForm = ({
   };
 
   return (
-    <div className="mt-4 p-4 border rounded">
-      <h3 className="text-lg font-semibold mb-3">Card Payment</h3>
-      <p className="mb-3 font-medium">Total Fare: ${fare.toFixed(2)}</p>
+    <motion.div
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      className="space-y-6"
+    >
+      <button
+        onClick={onBack}
+        className="flex items-center text-xs font-black text-slate-400 hover:text-indigo-600 transition-colors uppercase tracking-widest"
+      >
+        <ChevronLeft size={16} className="mr-1" /> Back
+      </button>
 
-      <form onSubmit={handleSubmit} className="space-y-3">
-        <div className="p-3 border rounded">
-          <CardElement
-            options={{
-              style: {
-                base: { fontSize: "16px", color: "#424770", "::placeholder": { color: "#aab7c4" } },
-              },
-            }}
-          />
+      <div className="bg-slate-900 p-8 rounded-[2rem] text-white shadow-2xl relative overflow-hidden">
+        <p className="text-slate-400 text-[10px] font-black uppercase tracking-[0.2em] mb-2">
+          Checkout Amount
+        </p>
+        <h3 className="text-5xl font-black italic">${fare.toFixed(2)}</h3>
+      </div>
+
+      <form onSubmit={handleSubmit} className="space-y-4">
+        {/* Card Number Input */}
+        <div className="space-y-1">
+          <label className="text-[10px] font-bold text-slate-500 ml-2 uppercase">
+            Card Number
+          </label>
+          <div className="p-4 border-2 border-slate-100 rounded-2xl bg-slate-50 focus-within:bg-white focus-within:border-indigo-600 transition-all">
+            <CardNumberElement options={elementOptions} />
+          </div>
         </div>
 
-        <button
-          type="submit"
+        <div className="grid grid-cols-2 gap-4">
+          {/* Expiry Input */}
+          <div className="space-y-1">
+            <label className="text-[10px] font-bold text-slate-500 ml-2 uppercase">
+              Expiry
+            </label>
+            <div className="p-4 border-2 border-slate-100 rounded-2xl bg-slate-50 focus-within:bg-white focus-within:border-indigo-600 transition-all">
+              <CardExpiryElement options={elementOptions} />
+            </div>
+          </div>
+          {/* CVC Input */}
+          <div className="space-y-1">
+            <label className="text-[10px] font-bold text-slate-500 ml-2 uppercase">
+              CVC
+            </label>
+            <div className="p-4 border-2 border-slate-100 rounded-2xl bg-slate-50 focus-within:bg-white focus-within:border-indigo-600 transition-all">
+              <CardCvcElement options={elementOptions} />
+            </div>
+          </div>
+        </div>
+
+        <Button
           disabled={!stripe || isProcessing}
-          className="w-full bg-green-600 text-white p-2 rounded disabled:bg-gray-400"
+          className="w-full h-16 rounded-[1.5rem] text-xl font-black uppercase shadow-xl transition-all active:scale-95"
         >
-          {isProcessing ? "Processing..." : `Pay $${fare.toFixed(2)}`}
-        </button>
+          {isProcessing ? (
+            <Loader2 className="animate-spin" />
+          ) : (
+            `Pay $${fare.toFixed(2)}`
+          )}
+        </Button>
       </form>
-    </div>
+    </motion.div>
   );
 };
 
-// Main RequestRide component
+// ... RequestRide component remains the same as your previous code ...
 const RequestRide = () => {
   const [pickup, setPickup] = useState("");
   const [dropoff, setDropoff] = useState("");
   const [fare, setFare] = useState<number | null>(null);
   const [showPayment, setShowPayment] = useState(false);
-  const [selectedPaymentMethod, setSelectedPaymentMethod] = useState<"card" | "cash">("card");
+  const [selectedMethod, setSelectedMethod] = useState<"card" | "cash">("card");
   const [requestRide, { isLoading }] = useRequestRideMutation();
 
-  // Calculate fare when locations change
   useEffect(() => {
-    if (pickup && dropoff) {
-      setFare(calculateFare(pickup, dropoff));
-    } else {
-      setFare(null);
-    }
+    if (pickup && dropoff) setFare(calculateFare(pickup, dropoff));
+    else setFare(null);
   }, [pickup, dropoff]);
 
-  const handleRideRequest = async (e: React.FormEvent) => {
-    e.preventDefault();
-
-    const result = rideSchema.safeParse({ pickupLocation: pickup, dropoffLocation: dropoff, fare:fare });
-    if (!result.success) {
-      result.error.issues.forEach((issue) => toast.error(issue.message));
-      return;
-    }
-
-    if (!fare) {
-      toast.error("Could not calculate fare");
-      return;
-    }
-
-    // Show payment form if card selected
-    if (selectedPaymentMethod === "card") {
+  const handleRequest = async () => {
+    if (!fare) return;
+    if (selectedMethod === "card") {
       setShowPayment(true);
       return;
     }
-
-    // Cash payment, directly request ride
     try {
-      await requestRide({ pickupLocation: pickup, dropoffLocation: dropoff, fare:fare }).unwrap();
-      toast.success("Ride requested! Pay cash to driver.");
-      setPickup(""); setDropoff(""); setFare(null);
+      await requestRide({
+        pickupLocation: pickup,
+        dropoffLocation: dropoff,
+        fare,
+      }).unwrap();
+      toast.success("Searching for nearby drivers!");
+      resetForm();
     } catch (err: any) {
-      toast.error(err?.data?.message || "Failed to request ride");
+      toast.error(err?.data?.message || "Request failed");
     }
   };
 
-  const handlePaymentSuccess = async () => {
-    if (!fare) return;
-    try {
-      await requestRide({ pickupLocation: pickup, dropoffLocation: dropoff, fare }).unwrap();
-      toast.success("Ride requested successfully! Payment done.");
-      setPickup(""); setDropoff(""); setFare(null); setShowPayment(false);
-    } catch (err: any) {
-      toast.error(err?.data?.message || "Failed to request ride");
-    }
+  const resetForm = () => {
+    setPickup("");
+    setDropoff("");
+    setFare(null);
+    setShowPayment(false);
   };
 
   return (
-    <div className="w-96 mx-auto p-6 rounded-lg shadow-md">
-      <h2 className="text-2xl font-bold mb-6 text-center">Request a Ride</h2>
+    <div className="max-w-md mx-auto p-4 py-10 min-h-screen">
+      <div className="mb-8 text-center">
+        <h2 className="text-3xl font-black tracking-tighter uppercase italic text-slate-900">
+          Book Your Ride
+        </h2>
+        <p className="text-slate-500 text-sm font-medium italic">
+          Safe, fast, and reliable transport
+        </p>
+      </div>
 
-      <form onSubmit={handleRideRequest} className="space-y-4">
-        <div>
-          <label className="block text-sm font-medium mb-1">Pickup Location</label>
-          <input
-            type="text"
-            placeholder="Enter pickup address"
-            value={pickup}
-            onChange={(e) => setPickup(e.target.value)}
-            className="w-full p-3 border rounded-md focus:ring-2 focus:ring-blue-500 focus:outline-none"
-            disabled={showPayment}
-          />
-        </div>
+      <div className="bg-white rounded-[2.5rem] border border-slate-100 shadow-2xl p-6 md:p-8">
+        {!showPayment ? (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            className="space-y-6"
+          >
+            <div className="relative space-y-4 before:absolute before:left-[19px] before:top-10 before:bottom-10 before:w-0.5 before:bg-slate-100">
+              <div className="relative flex items-center gap-4">
+                <CircleDot
+                  size={20}
+                  className="text-indigo-600 bg-white z-10"
+                />
+                <Input
+                  value={pickup}
+                  onChange={(e) => setPickup(e.target.value)}
+                  placeholder="Where from?"
+                  className="h-14 rounded-2xl bg-slate-50 border-none font-medium"
+                />
+              </div>
+              <div className="relative flex items-center gap-4">
+                <MapPin size={20} className="text-rose-500 bg-white z-10" />
+                <Input
+                  value={dropoff}
+                  onChange={(e) => setDropoff(e.target.value)}
+                  placeholder="Where to?"
+                  className="h-14 rounded-2xl bg-slate-50 border-none font-medium"
+                />
+              </div>
+            </div>
 
-        <div>
-          <label className="block text-sm font-medium mb-1">Dropoff Location</label>
-          <input
-            type="text"
-            placeholder="Enter destination address"
-            value={dropoff}
-            onChange={(e) => setDropoff(e.target.value)}
-            className="w-full p-3 border rounded-md focus:ring-2 focus:ring-blue-500 focus:outline-none"
-            disabled={showPayment}
-          />
-        </div>
+            {fare !== null && (
+              <motion.div
+                initial={{ scale: 0.9, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                className="p-4 bg-indigo-50 rounded-2xl flex justify-between items-center border border-indigo-100"
+              >
+                <div className="flex items-center gap-3 text-indigo-700">
+                  <Car size={24} />
+                  <div>
+                    <p className="text-[10px] uppercase font-black">
+                      Estimated Fare
+                    </p>
+                    <p className="text-xl font-black">${fare.toFixed(2)}</p>
+                  </div>
+                </div>
+              </motion.div>
+            )}
 
-        {fare !== null && (
-          <div className="p-3 bg-blue-50 rounded-md">
-            <p className="text-blue-800 font-semibold">Estimated Fare: ${fare.toFixed(2)}</p>
-          </div>
-        )}
+            <div className="grid grid-cols-2 gap-4">
+              <button
+                onClick={() => setSelectedMethod("card")}
+                className={`p-4 rounded-2xl border-2 transition-all flex flex-col items-center gap-2 ${
+                  selectedMethod === "card"
+                    ? "border-indigo-600 bg-indigo-50/50 text-indigo-600"
+                    : "border-slate-100 text-slate-400"
+                }`}
+              >
+                <CreditCard />{" "}
+                <span className="text-xs font-bold uppercase">Card</span>
+              </button>
+              <button
+                onClick={() => setSelectedMethod("cash")}
+                className={`p-4 rounded-2xl border-2 transition-all flex flex-col items-center gap-2 ${
+                  selectedMethod === "cash"
+                    ? "border-indigo-600 bg-indigo-50/50 text-indigo-600"
+                    : "border-slate-100 text-slate-400"
+                }`}
+              >
+                <Banknote />{" "}
+                <span className="text-xs font-bold uppercase">Cash</span>
+              </button>
+            </div>
 
-        {!showPayment && (
-          <div className="space-y-2">
-            <label>
-              <input type="radio" value="card" checked={selectedPaymentMethod === "card"} 
-                onChange={() => setSelectedPaymentMethod("card")} /> Card
-            </label>
-            <label>
-              <input type="radio" value="cash" checked={selectedPaymentMethod === "cash"} 
-                onChange={() => setSelectedPaymentMethod("cash")} /> Cash
-            </label>
-
-            <button
-              type="submit"
-              disabled={isLoading || !pickup || !dropoff || !fare}
-              className="w-full bg-blue-600 hover:bg-blue-700 text-white p-3 rounded-md disabled:bg-gray-400 transition-colors"
+            <Button
+              onClick={handleRequest}
+              disabled={isLoading || !pickup || !dropoff}
+              className="w-full h-14 rounded-2xl text-lg font-bold"
             >
-              {isLoading ? "Processing..." : "Continue"}
-            </button>
-          </div>
+              {isLoading ? (
+                <Loader2 className="animate-spin" />
+              ) : (
+                <>
+                  {selectedMethod === "card" ? "Go to Payment" : "Request Now"}{" "}
+                  <ArrowRight size={20} className="ml-2" />
+                </>
+              )}
+            </Button>
+          </motion.div>
+        ) : (
+          <Elements stripe={stripePromise}>
+            <PaymentForm
+              fare={fare!}
+              onSuccess={async () => {
+                await requestRide({
+                  pickupLocation: pickup,
+                  dropoffLocation: dropoff,
+                  fare: fare!,
+                }).unwrap();
+                toast.success("Finding driver...");
+                resetForm();
+              }}
+              onBack={() => setShowPayment(false)}
+            />
+          </Elements>
         )}
-      </form>
-
-      {showPayment && fare !== null && (
-        <Elements stripe={stripePromise}>
-          <PaymentForm fare={fare} onSuccess={handlePaymentSuccess} />
-        </Elements>
-      )}
+      </div>
     </div>
   );
 };

@@ -1,70 +1,129 @@
 // src/pages/driver/EarningsDashboard.tsx
-import { useState } from "react";
-import { useGetEarningsHistoryQuery, useGetDriverRidesQuery } from "@/redux/features/driver/driver.api";
+import { useState, useMemo } from "react";
+import { useGetDriverRidesQuery } from "@/redux/features/driver/driver.api";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
+import { format, subDays, subWeeks, subMonths, startOfDay, endOfDay, isWithinInterval } from "date-fns";
 
 import { DollarSign, TrendingUp, Calendar, MapPin, Clock } from "lucide-react";
 import { RideStatus, type IRide } from "@/types/ride.interface";
 
+// Define the location interface
+interface ILocation {
+  address: string;
+  coordinates?: {
+    lat: number;
+    lng: number;
+  };
+}
+
 const EarningsDashboard = () => {
-  const { isLoading: earningsLoading } = useGetEarningsHistoryQuery();
-  const { data: ridesData, isLoading: ridesLoading } = useGetDriverRidesQuery(undefined);
-  
   const [selectedPeriod, setSelectedPeriod] = useState<'daily' | 'weekly' | 'monthly'>('weekly');
+  
+  // Fetch real ride data
+  const { data: ridesResponse, isLoading: ridesLoading } = useGetDriverRidesQuery(undefined);
+  
+  // Extract rides data (same logic as RideOversight)
+  const rides = ridesResponse?.data || [];
 
-  // Safely extract rides array from the response
-  const rides = Array.isArray(ridesData) 
-    ? ridesData 
-    : Array.isArray(ridesData?.data) 
-      ? ridesData.data 
-      : [];
+  // Debug logging to check data
+  console.log('Rides Response:', ridesResponse);
+  console.log('Rides Array:', rides);
+  console.log('Sample ride:', rides[0]);
 
-  // Calculate earnings based on completed rides
-  const completedRides = rides.filter((ride: IRide) => ride.status === RideStatus.COMPLETED);
-  const totalEarnings = completedRides.reduce((sum, ride) => sum + (ride.fare || 0), 0);
+  // Filter completed rides and calculate real earnings
+  // Check for different status values - adjust based on your enum
+  const completedRides = useMemo(() => {
+    return rides.filter((ride: IRide) => 
+      ride.status === RideStatus.COMPLETED || 
+      ride.status === 'completed' ||
+      ride.status === 'accepted' || // Adding accepted status from your database
+      ride.status === 'ACCEPTED'
+    );
+  }, [rides]);
 
-  // Generate mock data for charts (since we don't have detailed earnings breakdown)
+  // Calculate total earnings from real data
+  const totalEarnings = useMemo(() => {
+    return completedRides.reduce((sum, ride) => sum + (ride.fare || 0), 0);
+  }, [completedRides]);
+
+  // Generate chart data based on real ride data
   const generateChartData = () => {
     const now = new Date();
     const data = [];
 
     if (selectedPeriod === 'daily') {
-      // Last 7 days
+      // Last 7 days with real data
       for (let i = 6; i >= 0; i--) {
         const date = new Date(now);
         date.setDate(date.getDate() - i);
-        const dayName = date.toLocaleDateString('en-US', { weekday: 'short' });
-        const earnings = Math.floor(Math.random() * 800) + 200; // Random earnings for demo
+        const dayName = format(date, 'EEE');
+        
+        // Filter rides for this specific day
+        const dayRides = completedRides.filter((ride: IRide) => {
+          if (!ride.completedAt && !ride.createdAt && !ride.requestedAt) return false;
+          const rideDate = new Date(ride.completedAt || ride.createdAt || ride.requestedAt);
+          return isWithinInterval(rideDate, {
+            start: startOfDay(date),
+            end: endOfDay(date)
+          });
+        });
+        
+        const dayEarnings = dayRides.reduce((sum, ride) => sum + (ride.fare || 0), 0);
+        
         data.push({
           name: dayName,
-          earnings,
-          rides: Math.floor(earnings / 120), // Approximate rides based on avg fare
+          earnings: dayEarnings,
+          rides: dayRides.length,
         });
       }
     } else if (selectedPeriod === 'weekly') {
-      // Last 4 weeks
+      // Last 4 weeks with real data
       for (let i = 3; i >= 0; i--) {
-        const weekStart = new Date(now);
-        weekStart.setDate(weekStart.getDate() - (i * 7));
+        const weekStart = subWeeks(now, i);
+        const weekEnd = subWeeks(now, i - 1);
         const weekName = `Week ${4 - i}`;
-        const earnings = Math.floor(Math.random() * 3000) + 1000;
+        
+        // Filter rides for this week
+        const weekRides = completedRides.filter((ride: IRide) => {
+          if (!ride.completedAt && !ride.createdAt && !ride.requestedAt) return false;
+          const rideDate = new Date(ride.completedAt || ride.createdAt || ride.requestedAt);
+          return isWithinInterval(rideDate, {
+            start: startOfDay(weekStart),
+            end: endOfDay(weekEnd)
+          });
+        });
+        
+        const weekEarnings = weekRides.reduce((sum, ride) => sum + (ride.fare || 0), 0);
+        
         data.push({
           name: weekName,
-          earnings,
-          rides: Math.floor(earnings / 120),
+          earnings: weekEarnings,
+          rides: weekRides.length,
         });
       }
     } else {
-      // Last 6 months
+      // Last 6 months with real data
       for (let i = 5; i >= 0; i--) {
-        const month = new Date(now);
-        month.setMonth(month.getMonth() - i);
-        const monthName = month.toLocaleDateString('en-US', { month: 'short' });
-        const earnings = Math.floor(Math.random() * 12000) + 3000;
+        const monthStart = subMonths(now, i);
+        const monthEnd = subMonths(now, i - 1);
+        const monthName = format(monthStart, 'MMM');
+        
+        // Filter rides for this month
+        const monthRides = completedRides.filter((ride: IRide) => {
+          if (!ride.completedAt && !ride.createdAt && !ride.requestedAt) return false;
+          const rideDate = new Date(ride.completedAt || ride.createdAt || ride.requestedAt);
+          return isWithinInterval(rideDate, {
+            start: startOfDay(monthStart),
+            end: endOfDay(monthEnd)
+          });
+        });
+        
+        const monthEarnings = monthRides.reduce((sum, ride) => sum + (ride.fare || 0), 0);
+        
         data.push({
           name: monthName,
-          earnings,
-          rides: Math.floor(earnings / 120),
+          earnings: monthEarnings,
+          rides: monthRides.length,
         });
       }
     }
@@ -73,14 +132,57 @@ const EarningsDashboard = () => {
 
   const chartData = generateChartData();
 
-  // Pie chart data for ride status distribution
+  // Ride status distribution with real data
   const rideStatusData = [
-    { name: 'Completed', value: rides.filter((r: IRide) => r.status === RideStatus.COMPLETED).length, color: '#10B981' },
-    { name: 'Cancelled', value: rides.filter((r: IRide) => r.status === RideStatus.CANCELLED).length, color: '#EF4444' },
-    { name: 'Rejected', value: rides.filter((r: IRide) => r.status === RideStatus.REJECTED).length, color: '#F59E0B' },
+    { 
+      name: 'Completed', 
+      value: rides.filter((r: IRide) => 
+        r.status === RideStatus.COMPLETED || 
+        r.status === 'completed' ||
+        r.status === 'accepted' || 
+        r.status === 'ACCEPTED'
+      ).length, 
+      color: '#10B981' 
+    },
+    { 
+      name: 'Cancelled', 
+      value: rides.filter((r: IRide) => 
+        r.status === RideStatus.CANCELLED || 
+        r.status === 'cancelled' ||
+        r.status === 'CANCELLED'
+      ).length, 
+      color: '#EF4444' 
+    },
+    { 
+      name: 'Rejected', 
+      value: rides.filter((r: IRide) => 
+        r.status === RideStatus.REJECTED || 
+        r.status === 'rejected' ||
+        r.status === 'REJECTED'
+      ).length, 
+      color: '#F59E0B' 
+    },
+    { 
+      name: 'Pending', 
+      value: rides.filter((r: IRide) => 
+        r.status === RideStatus.PENDING || 
+        r.status === 'pending' ||
+        r.status === 'PENDING'
+      ).length, 
+      color: '#6B7280' 
+    },
+    { 
+      name: 'Active', 
+      value: rides.filter((r: IRide) => 
+        r.status === RideStatus.ACTIVE || 
+        r.status === 'active' ||
+        r.status === 'ACTIVE'
+      ).length, 
+      color: '#3B82F6' 
+    },
   ].filter(item => item.value > 0);
 
-  if (earningsLoading || ridesLoading) {
+  if (ridesLoading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-blue-600"></div>
@@ -112,7 +214,7 @@ const EarningsDashboard = () => {
           </div>
         </div>
 
-        {/* Stats Cards */}
+        {/* Stats Cards with Real Data */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
           <div className="bg-white rounded-lg shadow p-6">
             <div className="flex items-center justify-between">
@@ -126,7 +228,7 @@ const EarningsDashboard = () => {
             </div>
             <div className="mt-2 flex items-center text-sm text-green-600">
               <TrendingUp className="h-4 w-4 mr-1" />
-              <span>+12.5% from last period</span>
+              <span>From {completedRides.length} completed rides</span>
             </div>
           </div>
 
@@ -182,7 +284,7 @@ const EarningsDashboard = () => {
 
         {/* Charts Row */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-          {/* Earnings Chart */}
+          {/* Earnings Chart with Real Data */}
           <div className="bg-white rounded-lg shadow p-6">
             <h3 className="text-lg font-semibold text-gray-900 mb-4">
               Earnings Trend ({selectedPeriod})
@@ -192,7 +294,6 @@ const EarningsDashboard = () => {
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis dataKey="name" />
                 <YAxis />
-              
                 <Tooltip 
                   formatter={(value: number) => [`৳${value}`, 'Earnings']} 
                 />
@@ -219,7 +320,7 @@ const EarningsDashboard = () => {
                     </div>
                   ))}
                 </div>
-                <div className="flex justify-center space-x-6 mt-4">
+                <div className="flex justify-center space-x-6 mt-4 flex-wrap">
                   {rideStatusData.map((item) => (
                     <div key={item.name} className="flex items-center">
                       <div 
@@ -239,7 +340,7 @@ const EarningsDashboard = () => {
           </div>
         </div>
 
-        {/* Recent Earnings Table */}
+        {/* Recent Earnings Table with Real Data */}
         <div className="bg-white rounded-lg shadow">
           <div className="px-6 py-4 border-b border-gray-200">
             <h3 className="text-lg font-semibold text-gray-900">Recent Completed Rides</h3>
@@ -263,26 +364,45 @@ const EarningsDashboard = () => {
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
-                {completedRides.slice(0, 10).map((ride: IRide) => (
-                  <tr key={ride._id} className="hover:bg-gray-50">
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                      {new Date(ride.completedAt || ride.requestedAt).toLocaleDateString()}
-                    </td>
-                    <td className="px-6 py-4 text-sm text-gray-900">
-                      <div className="max-w-xs truncate">
-                        {ride.pickupLocation} → {ride.dropoffLocation}
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                        {ride.status}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                      ৳{ride.fare || 0}
-                    </td>
-                  </tr>
-                ))}
+                {completedRides.slice(0, 10).map((ride: IRide) => {
+                  // Handle location data properly (same as RideOversight)
+                  const pickupAddress = typeof ride.pickupLocation === 'string' 
+                    ? ride.pickupLocation 
+                    : (ride.pickupLocation as ILocation)?.address || 'N/A';
+                    
+                  const dropoffAddress = typeof ride.dropoffLocation === 'string'
+                    ? ride.dropoffLocation
+                    : (ride.dropoffLocation as ILocation)?.address || 'N/A';
+                  
+                  return (
+                    <tr key={ride._id} className="hover:bg-gray-50">
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                        {ride.completedAt ? 
+                          format(new Date(ride.completedAt), 'PP') : 
+                          ride.createdAt ? 
+                            format(new Date(ride.createdAt), 'PP') : 
+                            ride.requestedAt ?
+                              format(new Date(ride.requestedAt), 'PP') :
+                              'N/A'
+                        }
+                      </td>
+                      <td className="px-6 py-4 text-sm text-gray-900">
+                        <div className="max-w-xs">
+                          <div className="truncate">{pickupAddress}</div>
+                          <div className="text-xs text-gray-500 truncate">→ {dropoffAddress}</div>
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800 capitalize">
+                          {ride.status}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                        ৳{ride.fare || 0}
+                      </td>
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
             

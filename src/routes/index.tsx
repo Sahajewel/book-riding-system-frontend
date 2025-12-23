@@ -21,6 +21,7 @@ import PrivacyPolicy from "@/pages/PrivacyPolicy";
 import Terms from "@/pages/Terms";
 import CookiePolicy from "@/pages/CookiePolicy";
 import Services from "@/pages/Services";
+import Safety from "@/pages/safety/Safety";
 
 export const router = createBrowserRouter([
   {
@@ -54,6 +55,10 @@ export const router = createBrowserRouter([
       {
         Component: Terms,
         path: "/terms",
+      },
+      {
+        Component: Safety,
+        path: "/safety",
       },
     ],
   },
