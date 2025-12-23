@@ -22,6 +22,7 @@ import Terms from "@/pages/Terms";
 import CookiePolicy from "@/pages/CookiePolicy";
 import Services from "@/pages/Services";
 import Safety from "@/pages/safety/Safety";
+import SupportPage from "@/pages/dashboard/SupportPage";
 
 export const router = createBrowserRouter([
   {
@@ -69,6 +70,10 @@ export const router = createBrowserRouter([
     children: [
       { index: true, element: <Navigate to="/admin/analytics"></Navigate> },
       ...generateRoutes(adminSideItems),
+      { path: "support", Component: SupportPage },
+      { path: "privacy", Component: PrivacyPolicy },
+      { path: "terms", Component: Terms },
+      { path: "contact", Component: Contact },
     ],
   },
   {
@@ -85,6 +90,10 @@ export const router = createBrowserRouter([
           })),
         }))
       ),
+      { path: "support", Component: SupportPage },
+      { path: "privacy", Component: PrivacyPolicy },
+      { path: "terms", Component: Terms },
+      { path: "contact", Component: Contact },
     ],
   },
 
@@ -102,6 +111,10 @@ export const router = createBrowserRouter([
           })),
         }))
       ),
+      { path: "support", Component: SupportPage },
+      { path: "privacy", Component: PrivacyPolicy },
+      { path: "terms", Component: Terms },
+      { path: "contact", Component: Contact },
     ],
   },
 

@@ -25,25 +25,25 @@ const DashboardFooter = () => {
         {/* Right: Support Links */}
         <div className="flex items-center gap-6">
           <Link
-            to="/rider/support"
+            to="support"
             className="flex items-center gap-2 text-xs font-bold text-slate-500 hover:text-indigo-600 transition-colors"
           >
             <LifeBuoy size={16} /> Support Center
           </Link>
           <div className="h-4 w-[1px] bg-slate-200" />
           <div className="flex gap-4">
-            <a
-              href="#"
+            <Link
+              to="privacy"
               className="text-[10px] font-bold text-slate-400 hover:text-slate-900 transition-colors uppercase tracking-widest"
             >
               Privacy
-            </a>
-            <a
-              href="#"
+            </Link>
+            <Link
+              to="terms"
               className="text-[10px] font-bold text-slate-400 hover:text-slate-900 transition-colors uppercase tracking-widest"
             >
               Terms
-            </a>
+            </Link>
           </div>
         </div>
       </div>

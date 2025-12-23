@@ -1,269 +1,273 @@
+import React, { useState, useEffect } from "react";
+import { motion, useScroll, useSpring } from "framer-motion";
+import {
+  ShieldCheck,
+  Lock,
+  MapPin,
+  Eye,
+  Trash2,
+  UserCheck,
+  Smartphone,
+  Globe,
+  ArrowRight,
+  ChevronRight,
+  Scale,
+} from "lucide-react";
+import { Link } from "react-router";
 
-
-// Drop this file at: src/pages/PrivacyPolicy.tsx (or wherever your routes expect)
-// TailwindCSS dark mode is supported via the `dark:` classes. No extra theme logic is required
-// if your app already toggles `class="dark"` on <html> or <body>.
-
-
-
-export default function PrivacyPolicy() {
-  const lastUpdated = "2025-08-01"; // ← update as needed
-  const appName = "RideX"; // ← reuse across the doc
-  const companyName = "RideX Technologies"; // ← update to your legal entity
- // ← replace with your contact
+const PrivacyPolicy = () => {
+  const lastUpdated = "Dec 24, 2025";
+  const appName = "RideX";
+  const { scrollYProgress } = useScroll();
+  const scaleX = useSpring(scrollYProgress, {
+    stiffness: 100,
+    damping: 30,
+    restDelta: 0.001,
+  });
 
   const sections = [
-    { id: "intro", label: "Overview" },
-    { id: "data-we-collect", label: "Information We Collect" },
-    { id: "how-we-use", label: "How We Use Information" },
-    { id: "sharing", label: "Sharing & Disclosure" },
-    { id: "location", label: "Location & Background Location" },
-    { id: "cookies", label: "Cookies & Similar Technologies" },
-    { id: "permissions", label: "App & Device Permissions" },
-    { id: "retention", label: "Data Retention" },
-    { id: "security", label: "Security" },
-    { id: "your-rights", label: "Your Rights & Choices" },
-    { id: "children", label: "Children’s Privacy" },
-    { id: "intl", label: "International Transfers" },
-    { id: "third-parties", label: "Third‑Party Services" },
-    { id: "changes", label: "Changes to this Policy" },
-    { id: "contact", label: "Contact Us" },
+    { id: "intro", label: "Overview", icon: Eye },
+    { id: "data-we-collect", label: "Data Collection", icon: Smartphone },
+    { id: "how-we-use", label: "Usage", icon: UserCheck },
+    { id: "location", label: "GPS & Tracking", icon: MapPin },
+    { id: "security", label: "Security", icon: Lock },
+    { id: "your-rights", label: "Your Rights", icon: ShieldCheck },
+    { id: "retention", label: "Data Retention", icon: Trash2 },
+    { id: "intl", label: "Global", icon: Globe },
   ];
 
   return (
-    <main className="min-h-screen bg-white text-gray-900 dark:bg-neutral-950 dark:text-neutral-100">
-      <div className="mx-auto w-full max-w-4xl px-6 py-12 lg:py-16">
-        {/* Header */}
-        <header className="mb-10 border-b border-gray-200 pb-6 dark:border-neutral-800">
-          <p className="text-sm text-gray-500 dark:text-neutral-400 mt-10">
-            Last updated: <time dateTime={lastUpdated}>{lastUpdated}</time>
-          </p>
-          <h1 className="mt-2 text-3xl font-bold tracking-tight sm:text-4xl ">
-             Privacy Policy
-          </h1>
-          <p className="mt-3 max-w-prose text-base text-gray-600 dark:text-neutral-300">
-            This Privacy Policy explains how {companyName} ("we", "us", or "our") collects, uses, shares, and protects
-            your information when you use {appName}’s websites, mobile apps, and related services (collectively, the
-            "Services"). By using the Services, you agree to this Policy.
-          </p>
-        </header>
+    <div className="min-h-screen bg-[#F8FAFC] dark:bg-neutral-950 transition-colors duration-500">
+      {/* 🚀 Reading Progress Bar */}
+      <motion.div
+        className="fixed top-0 left-0 right-0 h-1.5 bg-indigo-600 z-[60] origin-left"
+        style={{ scaleX }}
+      />
 
-        {/* In‑page nav */}
-        <nav aria-label="Table of contents" className="mb-10 overflow-x-auto">
-          <ol className="flex flex-wrap gap-2 text-sm">
-            {sections.map((s) => (
-              <li key={s.id}>
-                <a
-                  href={`#${s.id}`}
-                  className="inline-flex items-center rounded-full border border-gray-300 px-3 py-1.5 text-gray-700 transition hover:bg-gray-50 dark:border-neutral-700 dark:text-neutral-200 dark:hover:bg-neutral-900"
-                >
-                  {s.label}
-                </a>
-              </li>
-            ))}
-          </ol>
-        </nav>
-
-        <div className="space-y-10">
-          {/* Overview */}
-          <section id="intro" className="scroll-mt-24">
-            <h2 className="text-xl font-semibold">Overview</h2>
-            <p className="mt-3 text-gray-700 dark:text-neutral-300">
-              We process personal information to provide reliable ride‑hailing, delivery, and related features, including
-              matching riders with drivers, navigation, payments, customer support, and safety. The types of information
-              we collect and how we use it may vary depending on whether you are a rider, driver, or visitor.
-            </p>
-          </section>
-
-          {/* Information We Collect */}
-          <section id="data-we-collect" className="scroll-mt-24">
-            <h2 className="text-xl font-semibold">Information We Collect</h2>
-            <div className="mt-4 grid gap-6 rounded-2xl border border-gray-200 p-6 dark:border-neutral-800">
-              <Item
-                title="Account & Profile"
-                bullets={[
-                  "Name, email, phone number, profile photo, password (hashed)",
-                  "Government ID, driver license, vehicle details (drivers)",
-                ]}
-              />
-              <Item
-                title="Ride & Usage Data"
-                bullets={[
-                  "Pickup & drop‑off addresses, route, trip timestamps, fare, feedback",
-                  "App interactions, crash logs, device identifiers, and diagnostics",
-                ]}
-              />
-              <Item
-                title="Location Data"
-                bullets={[
-                  "Precise or approximate location from your device (with permission)",
-                  "Background location to enable live tracking and trip continuity (drivers)",
-                ]}
-              />
-              <Item
-                title="Payment & Transaction"
-                bullets={[
-                  "Masked card details, transaction IDs, billing address, receipts",
-                  "Processed securely by our payment partners; we do not store full card numbers",
-                ]}
-              />
-              <Item
-                title="Communications"
-                bullets={[
-                  "Support tickets, in‑app chats/calls (may be recorded where permitted)",
-                  "Marketing preferences and survey responses",
-                ]}
-              />
+      <div className="max-w-7xl mx-auto px-6 py-12 lg:py-20 flex flex-col lg:flex-row gap-12">
+        {/* 📋 Left Sidebar Navigation (Desktop) */}
+        <aside className="hidden lg:block w-72 shrink-0">
+          <div className="sticky top-28 space-y-2">
+            <div className="mb-8 p-6 bg-indigo-600 rounded-[2rem] text-white shadow-xl shadow-indigo-200 dark:shadow-none">
+              <Scale className="mb-4" size={32} />
+              <h3 className="font-black text-xl">Legal Center</h3>
+              <p className="text-indigo-100 text-xs mt-2 font-medium leading-relaxed">
+                We believe in 100% transparency regarding your data.
+              </p>
             </div>
-          </section>
 
-          {/* How We Use */}
-          <section id="how-we-use" className="scroll-mt-24">
-            <h2 className="text-xl font-semibold">How We Use Information</h2>
-            <ul className="mt-3 list-inside list-disc space-y-2 text-gray-700 dark:text-neutral-300">
-              <li>Provide, personalize, and improve the Services (including matching, routing, and ETAs).</li>
-              <li>Process payments, receipts, and fraud prevention.</li>
-              <li>Safety features, identity verification, and trust & safety investigations.</li>
-              <li>Customer support and service communications.</li>
-              <li>Research, analytics, and product development.</li>
-              <li>Legal obligations, dispute resolution, and enforcement of terms.</li>
-            </ul>
-          </section>
+            <nav className="space-y-1">
+              {sections.map((s) => (
+                <a
+                  key={s.id}
+                  href={`#${s.id}`}
+                  className="flex items-center gap-3 px-4 py-3 rounded-2xl text-sm font-bold text-slate-500 hover:bg-white hover:text-indigo-600 hover:shadow-sm transition-all group"
+                >
+                  <s.icon
+                    size={18}
+                    className="group-hover:scale-110 transition-transform"
+                  />
+                  {s.label}
+                  <ChevronRight
+                    size={14}
+                    className="ml-auto opacity-0 group-hover:opacity-100 transition-opacity"
+                  />
+                </a>
+              ))}
+            </nav>
+          </div>
+        </aside>
 
-          {/* Sharing & Disclosure */}
-          <section id="sharing" className="scroll-mt-24">
-            <h2 className="text-xl font-semibold">Sharing & Disclosure</h2>
-            <p className="mt-3 text-gray-700 dark:text-neutral-300">
-              We share information as needed to operate the Services and as required by law.
-            </p>
-            <ul className="mt-3 list-inside list-disc space-y-2 text-gray-700 dark:text-neutral-300">
-              <li><span className="font-medium">Between Riders & Drivers:</span> names, ratings, pickup/drop‑off details, and in‑trip contact channels.</li>
-              <li><span className="font-medium">Service Providers:</span> cloud hosting, maps, payments, analytics, communications.</li>
-              <li><span className="font-medium">Legal & Safety:</span> to law enforcement or others when necessary to protect rights, safety, and property.</li>
-              <li><span className="font-medium">Business Transfers:</span> as part of a merger, acquisition, or asset sale with appropriate safeguards.</li>
-            </ul>
-          </section>
+        {/* 📝 Main Content */}
+        <article className="flex-1 max-w-3xl">
+          {/* Header */}
+          <header className="mb-16">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="inline-flex items-center gap-2 px-4 py-2 bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 rounded-full text-[10px] font-black uppercase tracking-widest mb-6"
+            >
+              <ShieldCheck size={14} /> Trust & Safety Verified
+            </motion.div>
+            <h1 className="text-4xl md:text-6xl font-black text-slate-900 dark:text-white tracking-tight mb-6">
+              Privacy <span className="text-indigo-600">Policy</span>
+            </h1>
+            <div className="flex items-center gap-4 text-slate-400 dark:text-neutral-500 text-sm font-bold uppercase tracking-tighter">
+              <span>Version 2.4</span>
+              <span className="h-1 w-1 rounded-full bg-slate-300" />
+              <span>Updated: {lastUpdated}</span>
+            </div>
+          </header>
 
-          {/* Location */}
-          <section id="location" className="scroll-mt-24">
-            <h2 className="text-xl font-semibold">Location & Background Location</h2>
-            <p className="mt-3 text-gray-700 dark:text-neutral-300">
-              {appName} uses location to enable pickups, navigation, accurate ETAs, and safety features. Drivers may
-              enable background location to receive requests and provide live trip status even when the app is minimized.
-              You can change permissions in your device settings.
-            </p>
-          </section>
+          <div className="space-y-16">
+            {/* Overview Section */}
+            <section id="intro" className="scroll-mt-32">
+              <div className="p-8 bg-white dark:bg-neutral-900 rounded-[2.5rem] border border-slate-100 dark:border-neutral-800 shadow-sm leading-relaxed text-slate-600 dark:text-neutral-300">
+                <h2 className="text-2xl font-black text-slate-900 dark:text-white mb-4">
+                  The Big Picture
+                </h2>
+                <p>
+                  At {appName}, we process personal information to provide
+                  reliable ride‑hailing and safety features. This policy
+                  outlines our commitment to your privacy. By using our
+                  services, you're trusting us with your data, and we don't take
+                  that lightly.
+                </p>
+              </div>
+            </section>
 
-          {/* Cookies */}
-          <section id="cookies" className="scroll-mt-24">
-            <h2 className="text-xl font-semibold">Cookies & Similar Technologies</h2>
-            <p className="mt-3 text-gray-700 dark:text-neutral-300">
-              We use cookies, SDKs, and web beacons to remember preferences, keep you signed in, measure performance,
-              and deliver relevant content. You can manage cookies through your browser or device settings; restricting
-              cookies may affect certain features.
-            </p>
-          </section>
+            {/* Data Collection Grid */}
+            <section id="data-we-collect" className="scroll-mt-32">
+              <SectionTitle title="Information We Collect" />
+              <div className="grid gap-4 mt-8">
+                <DataCard
+                  icon={<Smartphone className="text-blue-500" />}
+                  title="Account Details"
+                  items={[
+                    "Full Name & Email",
+                    "Verified Phone Number",
+                    "Profile Photo (Encrypted)",
+                  ]}
+                />
+                <DataCard
+                  icon={<MapPin className="text-rose-500" />}
+                  title="Location Data"
+                  items={[
+                    "Real-time GPS Tracking",
+                    "Background location for Drivers",
+                    "Frequent Destinations",
+                  ]}
+                />
+                <DataCard
+                  icon={<Lock className="text-emerald-500" />}
+                  title="Payment Info"
+                  items={[
+                    "Masked Card Numbers",
+                    "Transaction History",
+                    "Billing Address",
+                  ]}
+                />
+              </div>
+            </section>
 
-          {/* Permissions */}
-          <section id="permissions" className="scroll-mt-24">
-            <h2 className="text-xl font-semibold">App & Device Permissions</h2>
-            <ul className="mt-3 list-inside list-disc space-y-2 text-gray-700 dark:text-neutral-300">
-              <li>Location (precise/background) — routing, matching, and safety.</li>
-              <li>Notifications — ride updates, receipts, promotions (opt‑out anytime).</li>
-              <li>Camera & Photos — profile photo, document capture (drivers).</li>
-              <li>Microphone — in‑app calls or voice notes (optional, where available).</li>
-              <li>Contacts — SOS/trusted contacts (optional, if you enable such feature).</li>
-            </ul>
-          </section>
+            {/* Simplified Terms Section */}
+            <section id="how-we-use" className="scroll-mt-32">
+              <SectionTitle title="How We Use It" />
+              <div className="mt-8 space-y-6">
+                <StepItem
+                  number="01"
+                  title="Service Delivery"
+                  desc="To match you with the best available drivers nearby."
+                />
+                <StepItem
+                  number="02"
+                  title="Safety First"
+                  desc="Emergency SOS and real-time trip monitoring for your protection."
+                />
+                <StepItem
+                  number="03"
+                  title="Better Experience"
+                  desc="Personalizing your routes and saving your favorite places."
+                />
+              </div>
+            </section>
 
-          {/* Retention */}
-          <section id="retention" className="scroll-mt-24">
-            <h2 className="text-xl font-semibold">Data Retention</h2>
-            <p className="mt-3 text-gray-700 dark:text-neutral-300">
-              We keep information as long as needed to provide the Services, comply with legal obligations, resolve
-              disputes, and enforce agreements. Retention periods vary by data type and applicable law.
-            </p>
-          </section>
-
-          {/* Security */}
-          <section id="security" className="scroll-mt-24">
-            <h2 className="text-xl font-semibold">Security</h2>
-            <p className="mt-3 text-gray-700 dark:text-neutral-300">
-              We implement administrative, technical, and physical safeguards designed to protect your information.
-              However, no method of transmission or storage is completely secure.
-            </p>
-          </section>
-
-          {/* Rights */}
-          <section id="your-rights" className="scroll-mt-24">
-            <h2 className="text-xl font-semibold">Your Rights & Choices</h2>
-            <ul className="mt-3 list-inside list-disc space-y-2 text-gray-700 dark:text-neutral-300">
-              <li>Access, correct, or delete your information (subject to legal limits).</li>
-              <li>Opt‑out of marketing communications.</li>
-              <li>Control device permissions and cookie preferences.</li>
-              <li>Where applicable, exercise rights under laws like GDPR/CCPA by contacting us.</li>
-            </ul>
-          </section>
-
-          {/* Children */}
-          <section id="children" className="scroll-mt-24">
-            <h2 className="text-xl font-semibold">Children’s Privacy</h2>
-            <p className="mt-3 text-gray-700 dark:text-neutral-300">
-              {appName} is not directed to children under the age required by local law. We do not knowingly collect
-              personal information from children. If you believe a child has provided data, please contact us for
-              deletion.
-            </p>
-          </section>
-
-          {/* International */}
-          <section id="intl" className="scroll-mt-24">
-            <h2 className="text-xl font-semibold">International Transfers</h2>
-            <p className="mt-3 text-gray-700 dark:text-neutral-300">
-              Your information may be processed and stored in countries other than your own. We use appropriate
-              safeguards (such as standard contractual clauses) where required by law.
-            </p>
-          </section>
-
-          {/* Third Parties */}
-          <section id="third-parties" className="scroll-mt-24">
-            <h2 className="text-xl font-semibold">Third‑Party Services</h2>
-            <p className="mt-3 text-gray-700 dark:text-neutral-300">
-              We rely on third‑party providers for maps, payments, communications, analytics, and cloud infrastructure.
-              Their use of your information is governed by their own policies. Examples include map providers (e.g.,
-              Google Maps), payment processors, and SMS/call masking services.
-            </p>
-          </section>
-
-          {/* Changes */}
-          <section id="changes" className="scroll-mt-24">
-            <h2 className="text-xl font-semibold">Changes to this Policy</h2>
-            <p className="mt-3 text-gray-700 dark:text-neutral-300">
-              We may update this Policy from time to time. We will notify you of material changes through the app,
-              email, or by updating the date at the top. Continued use of the Services means you accept the updated
-              Policy.
-            </p>
-          </section>
-
-          {/* Contact */}
-         
-        </div>
-
-        {/* Footer actions */}
-      
+            {/* Footer Notice */}
+            <footer className="pt-12 border-t border-slate-200 dark:border-neutral-800">
+              <div className="bg-slate-900 rounded-[2rem] p-10 text-white relative overflow-hidden">
+                <div className="relative z-10">
+                  <h3 className="text-2xl font-bold mb-4">Have questions?</h3>
+                  <p className="text-slate-400 mb-8 text-sm">
+                    Our privacy team is available 24/7 to answer your concerns.
+                  </p>
+                  <Link to="/contact">
+                    <button className="flex items-center gap-3 bg-indigo-600 hover:bg-indigo-500 px-8 py-4 rounded-2xl font-bold transition-all group">
+                      Contact Support{" "}
+                      <ArrowRight
+                        size={18}
+                        className="group-hover:translate-x-1 transition-transform"
+                      />
+                    </button>
+                  </Link>
+                </div>
+                <ShieldCheck
+                  className="absolute -right-10 -bottom-10 text-white/5"
+                  size={240}
+                />
+              </div>
+            </footer>
+          </div>
+        </article>
       </div>
-    </main>
+    </div>
   );
-}
+};
 
-function Item({ title, bullets }: { title: string; bullets: string[] }) {
-  return (
-    <div className="rounded-xl bg-gray-50 p-4 dark:bg-neutral-900">
-      <h3 className="text-base font-semibold">{title}</h3>
-      <ul className="mt-2 list-inside list-disc space-y-1 text-sm text-gray-700 dark:text-neutral-300">
-        {bullets.map((b, i) => (
-          <li key={i}>{b}</li>
+// --- Helper Components ---
+
+const SectionTitle = ({ title }: { title: string }) => (
+  <h2 className="text-3xl font-black text-slate-900 dark:text-white flex items-center gap-4">
+    <div className="h-8 w-1.5 bg-indigo-600 rounded-full" />
+    {title}
+  </h2>
+);
+
+const DataCard = ({
+  icon,
+  title,
+  items,
+}: {
+  icon: React.ReactNode;
+  title: string;
+  items: string[];
+}) => (
+  <motion.div
+    whileHover={{ x: 10 }}
+    className="flex gap-6 p-6 bg-white dark:bg-neutral-900 border border-slate-100 dark:border-neutral-800 rounded-3xl shadow-sm transition-all"
+  >
+    <div className="h-14 w-14 rounded-2xl bg-slate-50 dark:bg-neutral-800 flex items-center justify-center shrink-0">
+      {icon}
+    </div>
+    <div>
+      <h3 className="font-black text-slate-900 dark:text-white mb-2">
+        {title}
+      </h3>
+      <ul className="flex flex-wrap gap-2">
+        {items.map((it, i) => (
+          <li
+            key={i}
+            className="px-3 py-1 bg-slate-50 dark:bg-neutral-800 text-slate-500 dark:text-neutral-400 text-[10px] font-bold rounded-lg uppercase tracking-wider"
+          >
+            {it}
+          </li>
         ))}
       </ul>
     </div>
-  );
-}
+  </motion.div>
+);
+
+const StepItem = ({
+  number,
+  title,
+  desc,
+}: {
+  number: string;
+  title: string;
+  desc: string;
+}) => (
+  <div className="flex gap-6 items-start group">
+    <span className="text-4xl font-black text-slate-200 dark:text-neutral-800 group-hover:text-indigo-600 transition-colors">
+      {number}
+    </span>
+    <div>
+      <h4 className="font-black text-lg text-slate-800 dark:text-white mb-1">
+        {title}
+      </h4>
+      <p className="text-slate-500 dark:text-neutral-400 text-sm leading-relaxed">
+        {desc}
+      </p>
+    </div>
+  </div>
+);
+
+export default PrivacyPolicy;
