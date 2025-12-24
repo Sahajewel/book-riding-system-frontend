@@ -29,7 +29,6 @@ const stripePromise = loadStripe(
   import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY || ""
 );
 
-// অরিজিনাল ক্যালকুলেশন লজিক
 const calculateFare = (pickup: string, dropoff: string): number => {
   const baseFare = 50;
   const distanceRate = 15;
@@ -37,7 +36,6 @@ const calculateFare = (pickup: string, dropoff: string): number => {
   return baseFare + distance * distanceRate;
 };
 
-// স্টাইল অবজেক্ট যা সব ইনপুটে শেয়ার হবে
 const elementOptions = {
   style: {
     base: {
@@ -87,49 +85,51 @@ const PaymentForm = ({ fare, onSuccess, onBack }: any) => {
     <motion.div
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
-      className="space-y-6"
+      className="space-y-8" // Increased spacing for desktop
     >
       <button
         onClick={onBack}
         className="flex items-center text-xs font-black text-slate-400 hover:text-indigo-600 transition-colors uppercase tracking-widest"
       >
-        <ChevronLeft size={16} className="mr-1" /> Back
+        <ChevronLeft size={16} className="mr-1" /> Back to Ride Details
       </button>
 
-      <div className="bg-slate-900 p-8 rounded-[2rem] text-white shadow-2xl relative overflow-hidden">
-        <p className="text-slate-400 text-[10px] font-black uppercase tracking-[0.2em] mb-2">
-          Checkout Amount
-        </p>
-        <h3 className="text-5xl font-black italic">${fare.toFixed(2)}</h3>
+      <div className="bg-slate-900 p-10 rounded-[2.5rem] text-white shadow-2xl relative overflow-hidden">
+        <div className="relative z-10">
+          <p className="text-indigo-400 text-xs font-black uppercase tracking-[0.2em] mb-2">
+            Secure Checkout
+          </p>
+          <h3 className="text-6xl font-black italic tracking-tighter">
+            ${fare.toFixed(2)}
+          </h3>
+        </div>
+        <div className="absolute top-0 right-0 w-32 h-32 bg-indigo-500/10 blur-3xl rounded-full -mr-10 -mt-10"></div>
       </div>
 
-      <form onSubmit={handleSubmit} className="space-y-4">
-        {/* Card Number Input */}
-        <div className="space-y-1">
-          <label className="text-[10px] font-bold text-slate-500 ml-2 uppercase">
+      <form onSubmit={handleSubmit} className="space-y-6">
+        <div className="space-y-2">
+          <label className="text-xs font-bold text-slate-500 ml-2 uppercase tracking-wide">
             Card Number
           </label>
-          <div className="p-4 border-2 border-slate-100 rounded-2xl bg-slate-50 focus-within:bg-white focus-within:border-indigo-600 transition-all">
+          <div className="p-5 border-2 border-slate-100 rounded-2xl bg-slate-50 focus-within:bg-white focus-within:border-indigo-600 focus-within:ring-4 focus-within:ring-indigo-50 transition-all shadow-sm">
             <CardNumberElement options={elementOptions} />
           </div>
         </div>
 
-        <div className="grid grid-cols-2 gap-4">
-          {/* Expiry Input */}
-          <div className="space-y-1">
-            <label className="text-[10px] font-bold text-slate-500 ml-2 uppercase">
-              Expiry
+        <div className="grid grid-cols-2 gap-6">
+          <div className="space-y-2">
+            <label className="text-xs font-bold text-slate-500 ml-2 uppercase tracking-wide">
+              Expiry Date
             </label>
-            <div className="p-4 border-2 border-slate-100 rounded-2xl bg-slate-50 focus-within:bg-white focus-within:border-indigo-600 transition-all">
+            <div className="p-5 border-2 border-slate-100 rounded-2xl bg-slate-50 focus-within:bg-white focus-within:border-indigo-600 focus-within:ring-4 focus-within:ring-indigo-50 transition-all shadow-sm">
               <CardExpiryElement options={elementOptions} />
             </div>
           </div>
-          {/* CVC Input */}
-          <div className="space-y-1">
-            <label className="text-[10px] font-bold text-slate-500 ml-2 uppercase">
+          <div className="space-y-2">
+            <label className="text-xs font-bold text-slate-500 ml-2 uppercase tracking-wide">
               CVC
             </label>
-            <div className="p-4 border-2 border-slate-100 rounded-2xl bg-slate-50 focus-within:bg-white focus-within:border-indigo-600 transition-all">
+            <div className="p-5 border-2 border-slate-100 rounded-2xl bg-slate-50 focus-within:bg-white focus-within:border-indigo-600 focus-within:ring-4 focus-within:ring-indigo-50 transition-all shadow-sm">
               <CardCvcElement options={elementOptions} />
             </div>
           </div>
@@ -137,12 +137,12 @@ const PaymentForm = ({ fare, onSuccess, onBack }: any) => {
 
         <Button
           disabled={!stripe || isProcessing}
-          className="w-full h-16 rounded-[1.5rem] text-xl font-black uppercase shadow-xl transition-all active:scale-95"
+          className="w-full h-20 rounded-[2rem] text-2xl font-black uppercase shadow-2xl shadow-indigo-200 transition-all active:scale-95 bg-indigo-600 hover:bg-indigo-700 mt-4"
         >
           {isProcessing ? (
             <Loader2 className="animate-spin" />
           ) : (
-            `Pay $${fare.toFixed(2)}`
+            `Confirm Payment`
           )}
         </Button>
       </form>
@@ -150,7 +150,6 @@ const PaymentForm = ({ fare, onSuccess, onBack }: any) => {
   );
 };
 
-// ... RequestRide component remains the same as your previous code ...
 const RequestRide = () => {
   const [pickup, setPickup] = useState("");
   const [dropoff, setDropoff] = useState("");
@@ -191,122 +190,142 @@ const RequestRide = () => {
   };
 
   return (
-    <div className="max-w-md mx-auto p-4 py-10 min-h-screen">
-      <div className="mb-8 text-center">
-        <h2 className="text-3xl font-black tracking-tighter uppercase italic text-slate-900">
-          Book Your Ride
-        </h2>
-        <p className="text-slate-500 text-sm font-medium italic">
-          Safe, fast, and reliable transport
-        </p>
-      </div>
-
-      <div className="bg-white rounded-[2.5rem] border border-slate-100 shadow-2xl p-6 md:p-8">
-        {!showPayment ? (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            className="space-y-6"
+    <div className="container mx-auto px-4 py-16 min-h-screen flex flex-col items-center justify-center">
+      {/* Container width increased for desktop */}
+      <div className="w-full max-w-2xl">
+        <div className="mb-10 text-center">
+          <motion.h2
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="text-4xl md:text-5xl font-black tracking-tighter uppercase italic text-slate-900 mb-2"
           >
-            <div className="relative space-y-4 before:absolute before:left-[19px] before:top-10 before:bottom-10 before:w-0.5 before:bg-slate-100">
-              <div className="relative flex items-center gap-4">
-                <CircleDot
-                  size={20}
-                  className="text-indigo-600 bg-white z-10"
-                />
-                <Input
-                  value={pickup}
-                  onChange={(e) => setPickup(e.target.value)}
-                  placeholder="Where from?"
-                  className="h-14 rounded-2xl bg-slate-50 border-none font-medium"
-                />
-              </div>
-              <div className="relative flex items-center gap-4">
-                <MapPin size={20} className="text-rose-500 bg-white z-10" />
-                <Input
-                  value={dropoff}
-                  onChange={(e) => setDropoff(e.target.value)}
-                  placeholder="Where to?"
-                  className="h-14 rounded-2xl bg-slate-50 border-none font-medium"
-                />
-              </div>
-            </div>
+            {showPayment ? "Secure Payment" : "Book Your Ride"}
+          </motion.h2>
+          <p className="text-slate-500 text-base font-medium italic">
+            {showPayment
+              ? "Finish your transaction to confirm ride"
+              : "Safe, fast, and reliable transport"}
+          </p>
+        </div>
 
-            {fare !== null && (
-              <motion.div
-                initial={{ scale: 0.9, opacity: 0 }}
-                animate={{ scale: 1, opacity: 1 }}
-                className="p-4 bg-indigo-50 rounded-2xl flex justify-between items-center border border-indigo-100"
-              >
-                <div className="flex items-center gap-3 text-indigo-700">
-                  <Car size={24} />
-                  <div>
-                    <p className="text-[10px] uppercase font-black">
-                      Estimated Fare
-                    </p>
-                    <p className="text-xl font-black">${fare.toFixed(2)}</p>
-                  </div>
-                </div>
-              </motion.div>
-            )}
-
-            <div className="grid grid-cols-2 gap-4">
-              <button
-                onClick={() => setSelectedMethod("card")}
-                className={`p-4 rounded-2xl border-2 transition-all flex flex-col items-center gap-2 ${
-                  selectedMethod === "card"
-                    ? "border-indigo-600 bg-indigo-50/50 text-indigo-600"
-                    : "border-slate-100 text-slate-400"
-                }`}
-              >
-                <CreditCard />{" "}
-                <span className="text-xs font-bold uppercase">Card</span>
-              </button>
-              <button
-                onClick={() => setSelectedMethod("cash")}
-                className={`p-4 rounded-2xl border-2 transition-all flex flex-col items-center gap-2 ${
-                  selectedMethod === "cash"
-                    ? "border-indigo-600 bg-indigo-50/50 text-indigo-600"
-                    : "border-slate-100 text-slate-400"
-                }`}
-              >
-                <Banknote />{" "}
-                <span className="text-xs font-bold uppercase">Cash</span>
-              </button>
-            </div>
-
-            <Button
-              onClick={handleRequest}
-              disabled={isLoading || !pickup || !dropoff}
-              className="w-full h-14 rounded-2xl text-lg font-bold"
+        <div className="bg-white rounded-[3rem] border border-slate-100 shadow-[0_50px_100px_-20px_rgba(0,0,0,0.12)] p-8 md:p-12 transition-all">
+          {!showPayment ? (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              className="space-y-8"
             >
-              {isLoading ? (
-                <Loader2 className="animate-spin" />
-              ) : (
-                <>
-                  {selectedMethod === "card" ? "Go to Payment" : "Request Now"}{" "}
-                  <ArrowRight size={20} className="ml-2" />
-                </>
+              <div className="relative space-y-6 before:absolute before:left-[23px] before:top-12 before:bottom-12 before:w-1 before:bg-slate-50">
+                <div className="relative flex items-center gap-6">
+                  <div className="w-12 h-12 rounded-full bg-indigo-50 flex items-center justify-center shrink-0 z-10">
+                    <CircleDot size={24} className="text-indigo-600" />
+                  </div>
+                  <Input
+                    value={pickup}
+                    onChange={(e) => setPickup(e.target.value)}
+                    placeholder="Pickup Location"
+                    className="h-16 rounded-2xl bg-slate-50 border-none font-bold text-lg px-6 focus:bg-white focus:ring-4 focus:ring-indigo-50 transition-all"
+                  />
+                </div>
+                <div className="relative flex items-center gap-6">
+                  <div className="w-12 h-12 rounded-full bg-rose-50 flex items-center justify-center shrink-0 z-10">
+                    <MapPin size={24} className="text-rose-500" />
+                  </div>
+                  <Input
+                    value={dropoff}
+                    onChange={(e) => setDropoff(e.target.value)}
+                    placeholder="Destination Location"
+                    className="h-16 rounded-2xl bg-slate-50 border-none font-bold text-lg px-6 focus:bg-white focus:ring-4 focus:ring-rose-50 transition-all"
+                  />
+                </div>
+              </div>
+
+              {fare !== null && (
+                <motion.div
+                  initial={{ scale: 0.95, opacity: 0 }}
+                  animate={{ scale: 1, opacity: 1 }}
+                  className="p-8 bg-indigo-600 rounded-[2rem] flex justify-between items-center text-white shadow-xl shadow-indigo-200"
+                >
+                  <div className="flex items-center gap-5">
+                    <div className="p-4 bg-white/20 rounded-2xl">
+                      <Car size={32} />
+                    </div>
+                    <div>
+                      <p className="text-xs uppercase font-black tracking-widest opacity-80">
+                        Estimated Fare
+                      </p>
+                      <p className="text-4xl font-black italic">
+                        ${fare.toFixed(2)}
+                      </p>
+                    </div>
+                  </div>
+                </motion.div>
               )}
-            </Button>
-          </motion.div>
-        ) : (
-          <Elements stripe={stripePromise}>
-            <PaymentForm
-              fare={fare!}
-              onSuccess={async () => {
-                await requestRide({
-                  pickupLocation: pickup,
-                  dropoffLocation: dropoff,
-                  fare: fare!,
-                }).unwrap();
-                toast.success("Finding driver...");
-                resetForm();
-              }}
-              onBack={() => setShowPayment(false)}
-            />
-          </Elements>
-        )}
+
+              <div className="grid grid-cols-2 gap-6">
+                <button
+                  onClick={() => setSelectedMethod("card")}
+                  className={`p-6 rounded-[2rem] border-2 transition-all flex flex-col items-center gap-3 ${
+                    selectedMethod === "card"
+                      ? "border-indigo-600 bg-indigo-50 text-indigo-600 shadow-inner"
+                      : "border-slate-100 text-slate-400 hover:border-slate-200"
+                  }`}
+                >
+                  <CreditCard size={28} />
+                  <span className="text-sm font-black uppercase tracking-wider">
+                    Credit Card
+                  </span>
+                </button>
+                <button
+                  onClick={() => setSelectedMethod("cash")}
+                  className={`p-6 rounded-[2rem] border-2 transition-all flex flex-col items-center gap-3 ${
+                    selectedMethod === "cash"
+                      ? "border-indigo-600 bg-indigo-50 text-indigo-600 shadow-inner"
+                      : "border-slate-100 text-slate-400 hover:border-slate-200"
+                  }`}
+                >
+                  <Banknote size={28} />
+                  <span className="text-sm font-black uppercase tracking-wider">
+                    Cash Pay
+                  </span>
+                </button>
+              </div>
+
+              <Button
+                onClick={handleRequest}
+                disabled={isLoading || !pickup || !dropoff}
+                className="w-full h-20 rounded-[2rem] text-xl font-black uppercase shadow-2xl hover:translate-y-[-2px] active:translate-y-[0] transition-all"
+              >
+                {isLoading ? (
+                  <Loader2 className="animate-spin" />
+                ) : (
+                  <>
+                    {selectedMethod === "card"
+                      ? "Proceed to Checkout"
+                      : "Confirm Ride Request"}
+                    <ArrowRight size={24} className="ml-3" />
+                  </>
+                )}
+              </Button>
+            </motion.div>
+          ) : (
+            <Elements stripe={stripePromise}>
+              <PaymentForm
+                fare={fare!}
+                onSuccess={async () => {
+                  await requestRide({
+                    pickupLocation: pickup,
+                    dropoffLocation: dropoff,
+                    fare: fare!,
+                  }).unwrap();
+                  toast.success("Finding driver...");
+                  resetForm();
+                }}
+                onBack={() => setShowPayment(false)}
+              />
+            </Elements>
+          )}
+        </div>
       </div>
     </div>
   );

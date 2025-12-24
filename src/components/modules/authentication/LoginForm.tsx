@@ -20,7 +20,7 @@ import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 
 const loginSchema = z.object({
-  email: z.string().email("Please enter a valid email address"),
+  email: z.email("Please enter a valid email address"),
   password: z.string().min(1, "Password is required"),
 });
 
@@ -51,12 +51,16 @@ export function LoginForm({
     );
   };
 
-  const onSubmit: SubmitHandler<z.infer<typeof loginSchema>> = async (data) => {
+  const onSubmit: SubmitHandler<z.infer<typeof loginSchema>> = async (
+    data,
+    event
+  ) => {
+    event?.preventDefault();
     try {
       const res = await login(data).unwrap();
       if (res.success) {
         toast.success("Welcome back! Redirecting...");
-        navigate("/");
+        setTimeout(() => navigate("/"), 500);
       }
     } catch (error: any) {
       toast.error(
@@ -175,8 +179,12 @@ export function LoginForm({
             },
           ].map((item) => (
             <button
+              type="button"
               key={item.role}
-              onClick={() => fillDemoData(item.role)}
+              onClick={(e) => {
+                e.preventDefault();
+                fillDemoData(item.role);
+              }}
               className="flex flex-col items-center gap-1 p-2 rounded-xl border border-slate-200 dark:border-slate-800 hover:border-indigo-500 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 transition-all group"
             >
               <div className="text-slate-400 group-hover:text-indigo-600">

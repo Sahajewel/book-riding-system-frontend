@@ -5,7 +5,7 @@ import { motion } from "framer-motion";
 
 export default function LoginPage() {
   return (
-    <div className="grid min-h-svh lg:grid-cols-2 bg-white dark:bg-slate-950 transition-colors duration-300">
+    <div className="grid min-h-svh pt-20 lg:pt-0 lg:grid-cols-2 bg-white dark:bg-slate-950 transition-colors duration-300">
       {/* --- Left Side: Form --- */}
       <motion.div
         initial={{ opacity: 0, x: -20 }}

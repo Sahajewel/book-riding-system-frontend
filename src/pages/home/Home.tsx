@@ -16,6 +16,8 @@ import {
 } from "lucide-react";
 import { motion } from "framer-motion";
 import { toast } from "sonner";
+import DynamicStatsSection from "./DynamicSection";
+import { useGetDashboardStatsQuery } from "@/redux/analytics/analytics.api";
 
 // --- Types ---
 interface NavItem {
@@ -27,7 +29,8 @@ interface NavItem {
 const Home: React.FC = () => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isDarkMode, setIsDarkMode] = useState(false);
-
+  const { data, isLoading } = useGetDashboardStatsQuery(undefined);
+  const stats = data?.data || data;
   // Scroll visibility for sticky navbar
   useEffect(() => {
     const handleScroll = () => setIsScrolled(window.scrollY > 20);
@@ -70,7 +73,7 @@ const Home: React.FC = () => {
               </p>
               <div className="flex flex-wrap gap-4 mt-10">
                 <Link
-                  to="/explore"
+                  to="/rider/bookings"
                   className="bg-indigo-600 text-white px-8 py-4 rounded-xl font-bold shadow-xl shadow-indigo-200 dark:shadow-none flex items-center gap-2 hover:scale-105 transition-transform"
                 >
                   Book Now <ArrowRight size={20} />
@@ -80,6 +83,7 @@ const Home: React.FC = () => {
                 </button>
               </div>
             </motion.div>
+
             <motion.div
               initial={{ opacity: 0, scale: 0.8 }}
               animate={{ opacity: 1, scale: 1 }}
@@ -90,13 +94,23 @@ const Home: React.FC = () => {
                 alt="App Showcase"
                 className="rounded-3xl shadow-2xl rotate-3 hover:rotate-0 transition-all duration-500"
               />
-              <div className="absolute -bottom-6 -left-6 bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-xl flex items-center gap-4">
-                <div className="bg-green-100 p-3 rounded-full text-green-600">
+
+              {/* ২. DYNAMIC DRIVER COUNT (অরিজিনাল ডাটাবেজ থেকে) */}
+              <div className="absolute -bottom-6 -left-6 bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-xl flex items-center gap-4 border border-slate-100 dark:border-slate-700">
+                <div className="bg-green-100 dark:bg-green-900/30 p-3 rounded-full text-green-600 dark:text-green-400">
                   <CheckCircle2 size={24} />
                 </div>
                 <div>
-                  <h4 className="font-bold">50k+ Drivers</h4>
-                  <p className="text-sm text-slate-500">Verified & Available</p>
+                  <h4 className="font-black text-xl">
+                    {isLoading ? (
+                      <span className="animate-pulse">...</span>
+                    ) : (
+                      `${stats?.users?.drivers || 0}+ Drivers` // এখানে তোর ডাটাবেজের অরিজিনাল সংখ্যা দেখাবে
+                    )}
+                  </h4>
+                  <p className="text-sm text-slate-500 dark:text-slate-400 font-medium">
+                    Verified & Available
+                  </p>
                 </div>
               </div>
             </motion.div>
@@ -104,27 +118,7 @@ const Home: React.FC = () => {
         </section>
 
         {/* 3. STATISTICS */}
-        <section className="py-12 bg-slate-50 dark:bg-slate-900/50">
-          <div className="container mx-auto px-6">
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-8">
-              {[
-                { label: "Trips Completed", value: "25M+" },
-                { label: "Active Riders", value: "10M+" },
-                { label: "Cities Covered", value: "150+" },
-                { label: "User Rating", value: "4.9/5" },
-              ].map((stat, i) => (
-                <div key={i} className="text-center">
-                  <h2 className="text-4xl font-extrabold text-indigo-600">
-                    {stat.value}
-                  </h2>
-                  <p className="text-slate-500 font-medium mt-1">
-                    {stat.label}
-                  </p>
-                </div>
-              ))}
-            </div>
-          </div>
-        </section>
+        <DynamicStatsSection></DynamicStatsSection>
 
         {/* 4. SERVICES / CATEGORIES */}
         <section className="py-24">

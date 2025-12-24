@@ -23,6 +23,13 @@ import CookiePolicy from "@/pages/CookiePolicy";
 import Services from "@/pages/Services";
 import Safety from "@/pages/safety/Safety";
 import SupportPage from "@/pages/dashboard/SupportPage";
+import ExplorePage from "@/pages/home/Explore";
+import CityRides from "@/pages/home/CityRides";
+import Intercity from "@/pages/home/Intercity";
+import RideXShield from "@/pages/home/RideXShield";
+import HelpCenter from "@/pages/home/Helpcenter";
+import Sitemap from "@/pages/home/Sitemap";
+import SecurityPage from "@/pages/home/Security";
 
 export const router = createBrowserRouter([
   {
@@ -60,6 +67,38 @@ export const router = createBrowserRouter([
       {
         Component: Safety,
         path: "/safety",
+      },
+      {
+        Component: ExplorePage,
+        path: "/explore",
+      },
+      {
+        Component: CityRides,
+        path: "/services/city-rides",
+      },
+      {
+        Component: Intercity,
+        path: "/services/intercity",
+      },
+      {
+        Component: RideXShield,
+        path: "/services/ridex-shield",
+      },
+      {
+        Component: Sitemap,
+        path: "/sitemap",
+      },
+      {
+        Component: HelpCenter,
+        path: "/help-center",
+      },
+      {
+        Component: CookiePolicy,
+        path: "/cookie-policy",
+      },
+      {
+        Component: SecurityPage,
+        path: "/security",
       },
     ],
   },

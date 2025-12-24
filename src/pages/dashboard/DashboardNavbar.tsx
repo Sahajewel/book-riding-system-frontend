@@ -40,7 +40,7 @@ const DashboardNavbar = () => {
       await logout(undefined).unwrap();
       dispatch(authApi.util.resetApiState()); // ক্লিনআপ স্টেট
       toast.success("Logged out successfully");
-      navigate("/login");
+      navigate("/");
     } catch (error) {
       toast.error("Logout failed. Please try again.");
     }
