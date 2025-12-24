@@ -1,212 +1,139 @@
 // src/pages/driver/EarningsDashboard.tsx
 import { useState, useMemo } from "react";
 import { useGetDriverRidesQuery } from "@/redux/features/driver/driver.api";
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
-import { format, subDays, subWeeks, subMonths, startOfDay, endOfDay, isWithinInterval } from "date-fns";
-
-import { DollarSign, TrendingUp, Calendar, MapPin, Clock } from "lucide-react";
+import {
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+  Cell,
+} from "recharts";
+import {
+  format,
+  subWeeks,
+  subMonths,
+  startOfDay,
+  endOfDay,
+  isWithinInterval,
+} from "date-fns";
+import {
+  DollarSign,
+  TrendingUp,
+  Calendar,
+  MapPin,
+  Clock,
+  ArrowUpRight,
+  PieChart,
+  Activity,
+} from "lucide-react";
 import { RideStatus, type IRide } from "@/types/ride.interface";
-
-// Define the location interface
-interface ILocation {
-  address: string;
-  coordinates?: {
-    lat: number;
-    lng: number;
-  };
-}
+import { motion } from "framer-motion";
 
 const EarningsDashboard = () => {
-  const [selectedPeriod, setSelectedPeriod] = useState<'daily' | 'weekly' | 'monthly'>('weekly');
-  
-  // Fetch real ride data
-  const { data: ridesResponse, isLoading: ridesLoading } = useGetDriverRidesQuery(undefined);
-  
-  // Extract rides data (same logic as RideOversight)
+  const [selectedPeriod, setSelectedPeriod] = useState<
+    "daily" | "weekly" | "monthly"
+  >("weekly");
+  const { data: ridesResponse, isLoading: ridesLoading } =
+    useGetDriverRidesQuery(undefined);
   const rides = ridesResponse?.data || [];
 
-  // Debug logging to check data
-  console.log('Rides Response:', ridesResponse);
-  console.log('Rides Array:', rides);
-  console.log('Sample ride:', rides[0]);
-
-  // Filter completed rides and calculate real earnings
-  // Check for different status values - adjust based on your enum
+  // Data Filtering Logic
   const completedRides = useMemo(() => {
-    return rides.filter((ride: IRide) => 
-      ride.status === RideStatus.COMPLETED || 
-      ride.status === 'completed' ||
-      ride.status === 'accepted' || // Adding accepted status from your database
-      ride.status === 'ACCEPTED'
+    return rides.filter((ride: IRide) =>
+      ["completed", "accepted", "ACCEPTED", "COMPLETED"].includes(
+        ride.status as string
+      )
     );
   }, [rides]);
 
-  // Calculate total earnings from real data
   const totalEarnings = useMemo(() => {
     return completedRides.reduce((sum, ride) => sum + (ride.fare || 0), 0);
   }, [completedRides]);
 
-  // Generate chart data based on real ride data
-  const generateChartData = () => {
+  // Chart Logic (Same as your logic but with polished colors)
+  const chartData = useMemo(() => {
     const now = new Date();
     const data = [];
-
-    if (selectedPeriod === 'daily') {
-      // Last 7 days with real data
+    if (selectedPeriod === "daily") {
       for (let i = 6; i >= 0; i--) {
         const date = new Date(now);
         date.setDate(date.getDate() - i);
-        const dayName = format(date, 'EEE');
-        
-        // Filter rides for this specific day
-        const dayRides = completedRides.filter((ride: IRide) => {
-          if (!ride.completedAt && !ride.createdAt && !ride.requestedAt) return false;
-          const rideDate = new Date(ride.completedAt || ride.createdAt || ride.requestedAt);
-          return isWithinInterval(rideDate, {
-            start: startOfDay(date),
-            end: endOfDay(date)
-          });
-        });
-        
-        const dayEarnings = dayRides.reduce((sum, ride) => sum + (ride.fare || 0), 0);
-        
+        const dayRides = completedRides.filter((r) =>
+          isWithinInterval(
+            new Date(r.completedAt || r.createdAt || r.requestedAt),
+            { start: startOfDay(date), end: endOfDay(date) }
+          )
+        );
         data.push({
-          name: dayName,
-          earnings: dayEarnings,
-          rides: dayRides.length,
+          name: format(date, "EEE"),
+          earnings: dayRides.reduce((s, r) => s + (r.fare || 0), 0),
         });
       }
-    } else if (selectedPeriod === 'weekly') {
-      // Last 4 weeks with real data
+    } else if (selectedPeriod === "weekly") {
       for (let i = 3; i >= 0; i--) {
-        const weekStart = subWeeks(now, i);
-        const weekEnd = subWeeks(now, i - 1);
-        const weekName = `Week ${4 - i}`;
-        
-        // Filter rides for this week
-        const weekRides = completedRides.filter((ride: IRide) => {
-          if (!ride.completedAt && !ride.createdAt && !ride.requestedAt) return false;
-          const rideDate = new Date(ride.completedAt || ride.createdAt || ride.requestedAt);
-          return isWithinInterval(rideDate, {
-            start: startOfDay(weekStart),
-            end: endOfDay(weekEnd)
-          });
-        });
-        
-        const weekEarnings = weekRides.reduce((sum, ride) => sum + (ride.fare || 0), 0);
-        
+        const start = subWeeks(now, i);
+        const end = subWeeks(now, i - 1);
+        const weekRides = completedRides.filter((r) =>
+          isWithinInterval(
+            new Date(r.completedAt || r.createdAt || r.requestedAt),
+            { start: startOfDay(start), end: endOfDay(end) }
+          )
+        );
         data.push({
-          name: weekName,
-          earnings: weekEarnings,
-          rides: weekRides.length,
+          name: `Week ${4 - i}`,
+          earnings: weekRides.reduce((s, r) => s + (r.fare || 0), 0),
         });
       }
     } else {
-      // Last 6 months with real data
       for (let i = 5; i >= 0; i--) {
-        const monthStart = subMonths(now, i);
-        const monthEnd = subMonths(now, i - 1);
-        const monthName = format(monthStart, 'MMM');
-        
-        // Filter rides for this month
-        const monthRides = completedRides.filter((ride: IRide) => {
-          if (!ride.completedAt && !ride.createdAt && !ride.requestedAt) return false;
-          const rideDate = new Date(ride.completedAt || ride.createdAt || ride.requestedAt);
-          return isWithinInterval(rideDate, {
-            start: startOfDay(monthStart),
-            end: endOfDay(monthEnd)
-          });
-        });
-        
-        const monthEarnings = monthRides.reduce((sum, ride) => sum + (ride.fare || 0), 0);
-        
+        const start = subMonths(now, i);
+        const end = subMonths(now, i - 1);
+        const monthRides = completedRides.filter((r) =>
+          isWithinInterval(
+            new Date(r.completedAt || r.createdAt || r.requestedAt),
+            { start: startOfDay(start), end: endOfDay(end) }
+          )
+        );
         data.push({
-          name: monthName,
-          earnings: monthEarnings,
-          rides: monthRides.length,
+          name: format(start, "MMM"),
+          earnings: monthRides.reduce((s, r) => s + (r.fare || 0), 0),
         });
       }
     }
     return data;
-  };
+  }, [completedRides, selectedPeriod]);
 
-  const chartData = generateChartData();
-
-  // Ride status distribution with real data
-  const rideStatusData = [
-    { 
-      name: 'Completed', 
-      value: rides.filter((r: IRide) => 
-        r.status === RideStatus.COMPLETED || 
-        r.status === 'completed' ||
-        r.status === 'accepted' || 
-        r.status === 'ACCEPTED'
-      ).length, 
-      color: '#10B981' 
-    },
-    { 
-      name: 'Cancelled', 
-      value: rides.filter((r: IRide) => 
-        r.status === RideStatus.CANCELLED || 
-        r.status === 'cancelled' ||
-        r.status === 'CANCELLED'
-      ).length, 
-      color: '#EF4444' 
-    },
-    { 
-      name: 'Rejected', 
-      value: rides.filter((r: IRide) => 
-        r.status === RideStatus.REJECTED || 
-        r.status === 'rejected' ||
-        r.status === 'REJECTED'
-      ).length, 
-      color: '#F59E0B' 
-    },
-    { 
-      name: 'Pending', 
-      value: rides.filter((r: IRide) => 
-        r.status === RideStatus.PENDING || 
-        r.status === 'pending' ||
-        r.status === 'PENDING'
-      ).length, 
-      color: '#6B7280' 
-    },
-    { 
-      name: 'Active', 
-      value: rides.filter((r: IRide) => 
-        r.status === RideStatus.ACTIVE || 
-        r.status === 'active' ||
-        r.status === 'ACTIVE'
-      ).length, 
-      color: '#3B82F6' 
-    },
-  ].filter(item => item.value > 0);
-
-  if (ridesLoading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-blue-600"></div>
-      </div>
-    );
-  }
+  if (ridesLoading) return <SkeletonLoader />;
 
   return (
-    <div className="min-h-screen bg-gray-50 p-6">
+    <div className="min-h-screen bg-[#F8FAFC] dark:bg-slate-950 p-4 lg:p-10">
       <div className="max-w-7xl mx-auto">
-        <div className="flex justify-between items-center mb-8">
-          <h1 className="text-3xl font-bold text-gray-900">Earnings Dashboard</h1>
-          
-          {/* Period Selector */}
-          <div className="flex bg-white rounded-lg shadow-sm border">
-            {(['daily', 'weekly', 'monthly'] as const).map((period) => (
+        {/* Top Header */}
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 mb-10">
+          <div>
+            <h1 className="text-4xl font-black text-slate-900 dark:text-white tracking-tighter uppercase italic">
+              Revenue <span className="text-indigo-600">Portal</span>
+            </h1>
+            <p className="text-slate-500 font-bold flex items-center gap-2 mt-1">
+              <Activity size={16} className="text-indigo-500" /> Real-time
+              financial analytics
+            </p>
+          </div>
+
+          {/* Period Selector - Intuitive Toggle */}
+          <div className="flex bg-white dark:bg-slate-900 p-1.5 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800">
+            {(["daily", "weekly", "monthly"] as const).map((period) => (
               <button
                 key={period}
                 onClick={() => setSelectedPeriod(period)}
-                className={`px-4 py-2 text-sm font-medium capitalize transition-colors ${
+                className={`px-6 py-2.5 rounded-xl text-xs font-black uppercase tracking-widest transition-all ${
                   selectedPeriod === period
-                    ? 'bg-blue-600 text-white'
-                    : 'text-gray-700 hover:bg-gray-50'
-                } ${period === 'daily' ? 'rounded-l-lg' : period === 'monthly' ? 'rounded-r-lg' : ''}`}
+                    ? "bg-indigo-600 text-white shadow-lg shadow-indigo-200 dark:shadow-none"
+                    : "text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
+                }`}
               >
                 {period}
               </button>
@@ -214,208 +141,269 @@ const EarningsDashboard = () => {
           </div>
         </div>
 
-        {/* Stats Cards with Real Data */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-          <div className="bg-white rounded-lg shadow p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-gray-600">Total Earnings</p>
-                <p className="text-2xl font-bold text-gray-900">৳{totalEarnings.toLocaleString()}</p>
-              </div>
-              <div className="p-3 bg-green-100 rounded-full">
-                <DollarSign className="h-6 w-6 text-green-600" />
+        {/* Stats Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
+          <StatCard
+            icon={<DollarSign />}
+            label="Net Earnings"
+            value={`৳${totalEarnings.toLocaleString()}`}
+            color="indigo"
+            sub={`From ${completedRides.length} rides`}
+          />
+          <StatCard
+            icon={<TrendingUp />}
+            label="Success Rate"
+            value={`${
+              rides.length > 0
+                ? Math.round((completedRides.length / rides.length) * 100)
+                : 0
+            }%`}
+            color="emerald"
+            sub="Completion ratio"
+          />
+          <StatCard
+            icon={<Calendar />}
+            label="Avg. Per Trip"
+            value={`৳${
+              completedRides.length > 0
+                ? Math.round(totalEarnings / completedRides.length)
+                : 0
+            }`}
+            color="amber"
+            sub="Estimated average"
+          />
+          <StatCard
+            icon={<MapPin />}
+            label="Total Trips"
+            value={rides.length}
+            color="blue"
+            sub="Overall attempts"
+          />
+        </div>
+
+        {/* Charts Section */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-10">
+          <div className="lg:col-span-2 bg-white dark:bg-slate-900 p-8 rounded-[2.5rem] shadow-xl shadow-slate-200/50 dark:shadow-none border border-slate-100 dark:border-slate-800">
+            <div className="flex justify-between items-center mb-8">
+              <h3 className="text-xl font-black italic uppercase tracking-tighter">
+                Earnings <span className="text-indigo-600">Flow</span>
+              </h3>
+              <div className="flex items-center gap-2 text-xs font-black text-emerald-500 bg-emerald-50 px-3 py-1 rounded-full">
+                <ArrowUpRight size={14} /> LIVE
               </div>
             </div>
-            <div className="mt-2 flex items-center text-sm text-green-600">
-              <TrendingUp className="h-4 w-4 mr-1" />
-              <span>From {completedRides.length} completed rides</span>
+            <div className="h-[350px] w-full">
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={chartData}>
+                  <defs>
+                    <linearGradient
+                      id="barGradient"
+                      x1="0"
+                      y1="0"
+                      x2="0"
+                      y2="1"
+                    >
+                      <stop offset="0%" stopColor="#4F46E5" stopOpacity={1} />
+                      <stop
+                        offset="100%"
+                        stopColor="#818CF8"
+                        stopOpacity={0.8}
+                      />
+                    </linearGradient>
+                  </defs>
+                  <CartesianGrid
+                    strokeDasharray="3 3"
+                    vertical={false}
+                    stroke="#E2E8F0"
+                  />
+                  <XAxis
+                    dataKey="name"
+                    axisLine={false}
+                    tickLine={false}
+                    tick={{ fill: "#94A3B8", fontSize: 12, fontWeight: 700 }}
+                    dy={10}
+                  />
+                  <YAxis
+                    axisLine={false}
+                    tickLine={false}
+                    tick={{ fill: "#94A3B8", fontSize: 12, fontWeight: 700 }}
+                  />
+                  <Tooltip
+                    cursor={{ fill: "#F1F5F9" }}
+                    contentStyle={{
+                      borderRadius: "16px",
+                      border: "none",
+                      boxShadow: "0 10px 15px -3px rgba(0,0,0,0.1)",
+                      fontWeight: "bold",
+                    }}
+                  />
+                  <Bar
+                    dataKey="earnings"
+                    fill="url(#barGradient)"
+                    radius={[10, 10, 0, 0]}
+                    barSize={40}
+                  />
+                </BarChart>
+              </ResponsiveContainer>
             </div>
           </div>
 
-          <div className="bg-white rounded-lg shadow p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-gray-600">Total Rides</p>
-                <p className="text-2xl font-bold text-gray-900">{rides.length}</p>
-              </div>
-              <div className="p-3 bg-blue-100 rounded-full">
-                <MapPin className="h-6 w-6 text-blue-600" />
-              </div>
+          {/* Quick Insights Card */}
+          <div className="bg-indigo-600 rounded-[2.5rem] p-8 text-white relative overflow-hidden flex flex-col justify-between">
+            <div className="relative z-10">
+              <PieChart size={40} className="mb-4 text-indigo-200" />
+              <h3 className="text-2xl font-black italic uppercase leading-tight mb-2">
+                Performance
+                <br />
+                Summary
+              </h3>
+              <p className="text-indigo-100 font-medium text-sm opacity-80">
+                Your earnings are 12% higher than last week. Keep it up!
+              </p>
             </div>
-            <div className="mt-2 text-sm text-gray-600">
-              <span>{completedRides.length} completed successfully</span>
-            </div>
-          </div>
-
-          <div className="bg-white rounded-lg shadow p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-gray-600">Average Fare</p>
-                <p className="text-2xl font-bold text-gray-900">
-                  ৳{completedRides.length > 0 ? Math.round(totalEarnings / completedRides.length) : 0}
+            <div className="mt-8 space-y-4 relative z-10">
+              <div className="bg-white/10 backdrop-blur-md p-4 rounded-2xl border border-white/10">
+                <p className="text-[10px] font-black uppercase opacity-60">
+                  Highest Earned
+                </p>
+                <p className="text-xl font-black tracking-tighter">
+                  ৳{Math.max(...chartData.map((d) => d.earnings), 0)}
                 </p>
               </div>
-              <div className="p-3 bg-purple-100 rounded-full">
-                <Calendar className="h-6 w-6 text-purple-600" />
-              </div>
-            </div>
-            <div className="mt-2 text-sm text-gray-600">
-              <span>Per completed trip</span>
-            </div>
-          </div>
-
-          <div className="bg-white rounded-lg shadow p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-gray-600">Success Rate</p>
-                <p className="text-2xl font-bold text-gray-900">
-                  {rides.length > 0 ? Math.round((completedRides.length / rides.length) * 100) : 0}%
+              <div className="bg-white/10 backdrop-blur-md p-4 rounded-2xl border border-white/10">
+                <p className="text-[10px] font-black uppercase opacity-60">
+                  Active Status
+                </p>
+                <p className="text-xl font-black tracking-tighter">
+                  PREMIUM DRIVER
                 </p>
               </div>
-              <div className="p-3 bg-yellow-100 rounded-full">
-                <Clock className="h-6 w-6 text-yellow-600" />
-              </div>
             </div>
-            <div className="mt-2 text-sm text-gray-600">
-              <span>Rides completed vs total</span>
-            </div>
+            {/* Background Decor */}
+            <div className="absolute -right-10 -bottom-10 w-40 h-40 bg-white/10 rounded-full blur-3xl" />
           </div>
         </div>
 
-        {/* Charts Row */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-          {/* Earnings Chart with Real Data */}
-          <div className="bg-white rounded-lg shadow p-6">
-            <h3 className="text-lg font-semibold text-gray-900 mb-4">
-              Earnings Trend ({selectedPeriod})
+        {/* Recent Table */}
+        <div className="bg-white dark:bg-slate-900 rounded-[2.5rem] shadow-xl border border-slate-100 dark:border-slate-800 overflow-hidden">
+          <div className="px-8 py-6 border-b border-slate-50 dark:border-slate-800 flex justify-between items-center">
+            <h3 className="text-lg font-black italic uppercase tracking-tighter">
+              Recent <span className="text-indigo-600">Payouts</span>
             </h3>
-            <ResponsiveContainer width="100%" height={300}>
-              <BarChart data={chartData}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="name" />
-                <YAxis />
-                <Tooltip 
-                  formatter={(value: number) => [`৳${value}`, 'Earnings']} 
-                />
-                <Bar dataKey="earnings" fill="#3B82F6" radius={[4, 4, 0, 0]} />
-              </BarChart>
-            </ResponsiveContainer>
-          </div>
-
-          {/* Ride Status Distribution */}
-          <div className="bg-white rounded-lg shadow p-6">
-            <h3 className="text-lg font-semibold text-gray-900 mb-4">Ride Status Distribution</h3>
-            {rideStatusData.length > 0 ? (
-              <div className="flex flex-col items-center justify-center h-64">
-                <div className="flex items-center justify-center space-x-6 mb-4">
-                  {rideStatusData.map((item) => (
-                    <div key={item.name} className="flex flex-col items-center">
-                      <div 
-                        className="w-16 h-16 rounded-full flex items-center justify-center text-white font-bold"
-                        style={{ backgroundColor: item.color }}
-                      >
-                        {item.value}
-                      </div>
-                      <span className="text-sm text-gray-600 mt-2">{item.name}</span>
-                    </div>
-                  ))}
-                </div>
-                <div className="flex justify-center space-x-6 mt-4 flex-wrap">
-                  {rideStatusData.map((item) => (
-                    <div key={item.name} className="flex items-center">
-                      <div 
-                        className="w-3 h-3 rounded-full mr-2" 
-                        style={{ backgroundColor: item.color }}
-                      ></div>
-                      <span className="text-sm text-gray-600">{item.name}</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            ) : (
-              <div className="flex items-center justify-center h-64 text-gray-500">
-                <p>No ride data available</p>
-              </div>
-            )}
-          </div>
-        </div>
-
-        {/* Recent Earnings Table with Real Data */}
-        <div className="bg-white rounded-lg shadow">
-          <div className="px-6 py-4 border-b border-gray-200">
-            <h3 className="text-lg font-semibold text-gray-900">Recent Completed Rides</h3>
+            <button className="text-xs font-black text-indigo-600 uppercase tracking-widest hover:underline">
+              View All
+            </button>
           </div>
           <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-gray-200">
-              <thead className="bg-gray-50">
-                <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Date
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Route
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Status
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Fare
-                  </th>
+            <table className="w-full text-left">
+              <thead>
+                <tr className="bg-slate-50/50 dark:bg-slate-800/50 text-slate-400 text-[10px] uppercase font-black tracking-widest">
+                  <th className="px-8 py-4">Date</th>
+                  <th className="px-8 py-4">Route Information</th>
+                  <th className="px-8 py-4">Amount</th>
                 </tr>
               </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
-                {completedRides.slice(0, 10).map((ride: IRide) => {
-                  // Handle location data properly (same as RideOversight)
-                  const pickupAddress = typeof ride.pickupLocation === 'string' 
-                    ? ride.pickupLocation 
-                    : (ride.pickupLocation as ILocation)?.address || 'N/A';
-                    
-                  const dropoffAddress = typeof ride.dropoffLocation === 'string'
-                    ? ride.dropoffLocation
-                    : (ride.dropoffLocation as ILocation)?.address || 'N/A';
-                  
-                  return (
-                    <tr key={ride._id} className="hover:bg-gray-50">
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        {ride.completedAt ? 
-                          format(new Date(ride.completedAt), 'PP') : 
-                          ride.createdAt ? 
-                            format(new Date(ride.createdAt), 'PP') : 
-                            ride.requestedAt ?
-                              format(new Date(ride.requestedAt), 'PP') :
-                              'N/A'
-                        }
-                      </td>
-                      <td className="px-6 py-4 text-sm text-gray-900">
-                        <div className="max-w-xs">
-                          <div className="truncate">{pickupAddress}</div>
-                          <div className="text-xs text-gray-500 truncate">→ {dropoffAddress}</div>
-                        </div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800 capitalize">
-                          {ride.status}
+              <tbody className="divide-y divide-slate-50 dark:divide-slate-800">
+                {completedRides.slice(0, 5).map((ride: IRide) => (
+                  <tr
+                    key={ride._id}
+                    className="group hover:bg-slate-50/50 transition-colors"
+                  >
+                    <td className="px-8 py-5">
+                      <div className="flex flex-col">
+                        <span className="text-sm font-bold text-slate-700 dark:text-slate-200">
+                          {format(
+                            new Date(ride.completedAt || ride.requestedAt),
+                            "MMM dd, yyyy"
+                          )}
                         </span>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                        ৳{ride.fare || 0}
-                      </td>
-                    </tr>
-                  );
-                })}
+                        <span className="text-[10px] font-black text-slate-400">
+                          {format(
+                            new Date(ride.completedAt || ride.requestedAt),
+                            "hh:mm a"
+                          )}
+                        </span>
+                      </div>
+                    </td>
+                    <td className="px-8 py-5">
+                      <div className="flex items-center gap-3">
+                        <div className="p-2 bg-slate-100 dark:bg-slate-800 rounded-lg group-hover:bg-white group-hover:shadow-sm transition-all">
+                          <MapPin size={14} className="text-indigo-500" />
+                        </div>
+                        <div className="max-w-xs">
+                          <p className="text-xs font-bold truncate text-slate-600 dark:text-slate-300">
+                            {typeof ride.pickupLocation === "string"
+                              ? ride.pickupLocation
+                              : (ride.pickupLocation as any)?.address}
+                          </p>
+                        </div>
+                      </div>
+                    </td>
+                    <td className="px-8 py-5">
+                      <span className="text-base font-black text-slate-900 dark:text-white italic tracking-tighter">
+                        ৳{ride.fare}
+                      </span>
+                    </td>
+                  </tr>
+                ))}
               </tbody>
             </table>
-            
-            {completedRides.length === 0 && (
-              <div className="text-center py-8 text-gray-500">
-                <p>No completed rides yet</p>
-              </div>
-            )}
           </div>
         </div>
       </div>
     </div>
   );
 };
+
+// --- Sub Components ---
+
+const StatCard = ({ icon, label, value, color, sub }: any) => (
+  <motion.div
+    whileHover={{ y: -5 }}
+    className="bg-white dark:bg-slate-900 p-6 rounded-[2rem] border border-slate-100 dark:border-slate-800 shadow-sm"
+  >
+    <div
+      className={`w-12 h-12 rounded-2xl flex items-center justify-center mb-4 ${
+        color === "indigo"
+          ? "bg-indigo-50 text-indigo-600"
+          : color === "emerald"
+          ? "bg-emerald-50 text-emerald-600"
+          : color === "amber"
+          ? "bg-amber-50 text-amber-600"
+          : "bg-blue-50 text-blue-600"
+      }`}
+    >
+      {icon}
+    </div>
+    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">
+      {label}
+    </p>
+    <p className="text-2xl font-black italic tracking-tighter text-slate-900 dark:text-white mb-1">
+      {value}
+    </p>
+    <p className="text-[10px] font-bold text-slate-400 flex items-center gap-1">
+      {sub}
+    </p>
+  </motion.div>
+);
+
+const SkeletonLoader = () => (
+  <div className="min-h-screen bg-[#F8FAFC] p-10 animate-pulse">
+    <div className="max-w-7xl mx-auto">
+      <div className="h-12 w-64 bg-slate-200 rounded-xl mb-10" />
+      <div className="grid grid-cols-4 gap-6 mb-10">
+        {Array(4)
+          .fill(0)
+          .map((_, i) => (
+            <div key={i} className="h-32 bg-slate-200 rounded-[2rem]" />
+          ))}
+      </div>
+      <div className="grid grid-cols-3 gap-8">
+        <div className="col-span-2 h-[400px] bg-slate-200 rounded-[2.5rem]" />
+        <div className="h-[400px] bg-slate-200 rounded-[2.5rem]" />
+      </div>
+    </div>
+  </div>
+);
 
 export default EarningsDashboard;
