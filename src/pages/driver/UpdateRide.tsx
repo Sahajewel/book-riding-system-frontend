@@ -9,223 +9,229 @@ import { toast } from "sonner";
 import {
   MapPin,
   Clock,
-  User,
   Navigation,
   CheckCircle,
   XCircle,
   ArrowLeft,
   Phone,
   Car,
-  DollarSign,
-  Calendar
+  Zap,
+  RefreshCw,
+  UserCheck,
 } from "lucide-react";
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router";
+import { motion, AnimatePresence } from "framer-motion";
 
-// API response er type define koro
-interface RidesResponse {
-  data: IRide[];
-  message?: string;
-  success?: boolean;
-}
-
-const UpdateRides = () => {
+const RideRequests = () => {
   const navigate = useNavigate();
-  const { data, isLoading, refetch } = useGetDriverRidesQuery(undefined);
+  const { data, isLoading, refetch, isFetching } =
+    useGetDriverRidesQuery(undefined);
   const [acceptRide] = useAcceptRideMutation();
   const [rejectRide] = useRejectRideMutation();
-  const [filteredRides, setFilteredRides] = useState<IRide[]>([]);
 
-  // Type assertion korbo
-  const ridesResponse = data as unknown as RidesResponse;
-  const rides = ridesResponse?.data || [];
+  const rides = (data as any)?.data || [];
+  const requestedRides = rides.filter(
+    (ride: IRide) => ride.status === "requested"
+  );
 
-  // Auto-refresh every 20 seconds
   useEffect(() => {
-    const interval = setInterval(() => {
-      refetch();
-    }, 20000);
-
+    const interval = setInterval(() => refetch(), 15000);
     return () => clearInterval(interval);
   }, [refetch]);
 
-  // Filter only requested rides
-  useEffect(() => {
-    const requestedRides = rides.filter(ride => ride.status === "requested");
-    setFilteredRides(requestedRides);
-  }, [rides]);
+  const handleAction = async (action: "accept" | "reject", rideId: string) => {
+    try {
+      if (action === "accept") {
+        await acceptRide(rideId).unwrap();
+        toast.success("Mission Started! Drive to pickup point.");
+        navigate("/driver/active-ride"); // সরাসরি অ্যাক্টিভ রাইড পেজে নিয়ে যাবে
+      } else {
+        await rejectRide(rideId).unwrap();
+        toast.error("Request Ignored");
+      }
+    } catch (err: any) {
+      toast.error(err?.data?.message || "Operation failed");
+    }
+  };
 
-  if (isLoading) {
-    return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-blue-600"></div>
-      </div>
-    );
-  }
+  if (isLoading) return <RequestSkeleton />;
 
   return (
-    <div className="min-h-screen bg-gray-50 p-4 md:p-6">
-      <div className="max-w-4xl mx-auto">
-        {/* Header */}
-        <div className="flex items-center mb-6">
-          <button 
+    <div className="min-h-screen bg-[#0F172A] text-slate-200 pb-10">
+      {/* Dynamic Header */}
+      <div className="sticky top-0 z-50 bg-[#0F172A]/80 backdrop-blur-xl border-b border-slate-800 px-6 py-4">
+        <div className="max-w-2xl mx-auto flex justify-between items-center">
+          <button
             onClick={() => navigate(-1)}
-            className="flex items-center text-blue-600 hover:text-blue-800 mr-4"
+            className="p-2 hover:bg-slate-800 rounded-full transition-colors text-slate-400"
           >
-            <ArrowLeft className="h-5 w-5 mr-1" />
-            Back
+            <ArrowLeft size={24} />
           </button>
-          <h1 className="text-2xl md:text-3xl font-bold text-gray-900">Ride Requests</h1>
-          <button 
+          <div className="text-center">
+            <h1 className="text-xl font-black italic tracking-tighter uppercase">
+              Incoming <span className="text-indigo-500">Jobs</span>
+            </h1>
+            <p className="text-[10px] text-slate-500 font-bold uppercase tracking-[0.3em]">
+              Nearby Requests
+            </p>
+          </div>
+          <button
             onClick={() => refetch()}
-            className="ml-auto bg-blue-100 hover:bg-blue-200 text-blue-700 px-4 py-2 rounded-lg flex items-center"
+            className={`p-2 rounded-full ${
+              isFetching ? "animate-spin text-indigo-500" : "text-slate-400"
+            }`}
           >
-            <Clock className="h-4 w-4 mr-1" />
-            Refresh
+            <RefreshCw size={20} />
           </button>
         </div>
+      </div>
 
-        {/* Stats Card */}
-        <div className="bg-gradient-to-r from-blue-500 to-indigo-600 rounded-xl shadow-lg p-6 text-white mb-8">
-          <h2 className="text-xl font-semibold mb-2">New Ride Requests</h2>
-          <p className="text-3xl font-bold">{filteredRides.length} pending</p>
-          <p className="text-blue-100 mt-2">Accept rides to earn money</p>
-        </div>
-
-        {filteredRides.length === 0 ? (
-          <div className="bg-white rounded-xl shadow-lg p-8 text-center">
-            <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
-              <Car className="h-8 w-8 text-gray-400" />
+      <div className="max-w-2xl mx-auto p-4 space-y-6">
+        {/* Status Dashboard */}
+        <div className="grid grid-cols-2 gap-4">
+          <div className="bg-slate-900/50 border border-slate-800 p-4 rounded-[2rem] flex items-center gap-4">
+            <div className="w-12 h-12 bg-indigo-500/10 rounded-2xl flex items-center justify-center text-indigo-500">
+              <Zap size={24} fill="currentColor" />
             </div>
-            <h3 className="text-xl font-semibold text-gray-900 mb-2">No Ride Requests</h3>
-            <p className="text-gray-600 mb-4">You don't have any ride requests at the moment.</p>
-            <button 
-              onClick={() => refetch()}
-              className="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-6 rounded-lg transition-colors"
-            >
-              Check Again
-            </button>
+            <div>
+              <p className="text-2xl font-black italic">
+                {requestedRides.length}
+              </p>
+              <p className="text-[10px] font-bold text-slate-500 uppercase">
+                Available
+              </p>
+            </div>
           </div>
-        ) : (
-          <div className="space-y-5">
-            {filteredRides.map((ride: IRide) => (
-              <div key={ride._id} className="bg-white rounded-xl shadow-lg overflow-hidden">
-                {/* Ride Header */}
-                <div className="bg-gradient-to-r from-blue-50 to-indigo-50 p-4 border-b">
-                  <div className="flex justify-between items-center">
-                    <div className="flex items-center">
-                      <Calendar className="h-5 w-5 text-blue-600 mr-2" />
-                      <span className="text-sm text-gray-600">
-                        {new Date(ride.requestedAt).toLocaleString()}
-                      </span>
-                    </div>
-                    <span className="bg-yellow-100 text-yellow-800 text-xs font-medium px-2.5 py-0.5 rounded">
-                      Pending
-                    </span>
-                  </div>
-                </div>
-
-                {/* Ride Details */}
-                <div className="p-5">
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-5">
-                    {/* Pickup Location */}
-                    <div className="flex items-start">
-                      <div className="bg-green-100 p-2 rounded-full mr-3">
-                        <MapPin className="h-5 w-5 text-green-600" />
-                      </div>
-                      <div>
-                        <p className="text-sm font-medium text-gray-500">Pickup</p>
-                        <p className="font-medium text-gray-900">{ride.pickupLocation}</p>
-                      </div>
-                    </div>
-
-                    {/* Dropoff Location */}
-                    <div className="flex items-start">
-                      <div className="bg-red-100 p-2 rounded-full mr-3">
-                        <Navigation className="h-5 w-5 text-red-600" />
-                      </div>
-                      <div>
-                        <p className="text-sm font-medium text-gray-500">Dropoff</p>
-                        <p className="font-medium text-gray-900">{ride.dropoffLocation}</p>
-                      </div>
-                    </div>
-
-                    {/* Fare */}
-                    <div className="flex items-start">
-                      <div className="bg-purple-100 p-2 rounded-full mr-3">
-                        <DollarSign className="h-5 w-5 text-purple-600" />
-                      </div>
-                      <div>
-                        <p className="text-sm font-medium text-gray-500">Fare</p>
-                        <p className="font-bold text-lg text-green-600">৳{ride.fare}</p>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Passenger Info */}
-                  <div className="bg-gray-50 rounded-lg p-4 mb-5">
-                    <h4 className="font-medium text-gray-900 mb-2 flex items-center">
-                      <User className="h-4 w-4 mr-2 text-blue-600" />
-                      Passenger Information
-                    </h4>
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <p className="text-sm text-gray-600">Name: {ride.passengerId?.name || 'Passenger'}</p>
-                        <p className="text-sm text-gray-600">Ride ID: {ride._id?.slice(-8)}</p>
-                      </div>
-                      <button className="flex items-center bg-blue-600 hover:bg-blue-700 text-white px-3 py-1.5 rounded-lg text-sm">
-                        <Phone className="h-4 w-4 mr-1" />
-                        Call Passenger
-                      </button>
-                    </div>
-                  </div>
-
-                  {/* Action Buttons */}
-                  <div className="flex flex-col sm:flex-row gap-3">
-                    <button
-                      onClick={async () => {
-                        try {
-                          await acceptRide(ride._id).unwrap();
-                          toast.success("Ride Accepted Successfully!");
-                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                        } catch (err: any) {
-                          toast.error(err?.data?.message || "Unable to accept ride");
-                        }
-                      }}
-                      className="flex-1 flex items-center justify-center bg-green-600 hover:bg-green-700 text-white font-semibold py-3 px-6 rounded-lg transition-colors"
-                    >
-                      <CheckCircle className="h-5 w-5 mr-2" />
-                      Accept Ride
-                    </button>
-                    <button
-                      onClick={async () => {
-                        try {
-                          await rejectRide(ride._id).unwrap();
-                          toast.error("Ride Rejected");
-                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                        } catch (err: any) {
-                          toast.error(err?.data?.message || "Unable to reject ride");
-                        }
-                      }}
-                      className="flex-1 flex items-center justify-center bg-red-600 hover:bg-red-700 text-white font-semibold py-3 px-6 rounded-lg transition-colors"
-                    >
-                      <XCircle className="h-5 w-5 mr-2" />
-                      Reject Ride
-                    </button>
-                  </div>
-                </div>
-              </div>
-            ))}
+          <div className="bg-slate-900/50 border border-slate-800 p-4 rounded-[2rem] flex items-center gap-4">
+            <div className="w-12 h-12 bg-emerald-500/10 rounded-2xl flex items-center justify-center text-emerald-500">
+              <Clock size={24} />
+            </div>
+            <div>
+              <p className="text-2xl font-black italic">Live</p>
+              <p className="text-[10px] font-bold text-slate-500 uppercase">
+                Radar Mode
+              </p>
+            </div>
           </div>
-        )}
-
-        {/* Footer Info */}
-        <div className="mt-8 text-center text-sm text-gray-500">
-          <p>Ride requests automatically refresh every 20 seconds</p>
         </div>
+
+        {/* List of Requests */}
+        <AnimatePresence mode="popLayout">
+          {requestedRides.length === 0 ? (
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="py-20 text-center space-y-4"
+            >
+              <div className="relative inline-block">
+                <div className="absolute inset-0 bg-indigo-500 blur-3xl opacity-20 animate-pulse" />
+                <Car size={80} className="relative text-slate-700 mx-auto" />
+              </div>
+              <p className="text-slate-500 font-bold uppercase tracking-widest text-sm">
+                Searching for new rides...
+              </p>
+            </motion.div>
+          ) : (
+            requestedRides.map((ride: IRide, index: number) => (
+              <motion.div
+                key={ride._id}
+                initial={{ x: -50, opacity: 0 }}
+                animate={{ x: 0, opacity: 1 }}
+                exit={{ x: 50, opacity: 0 }}
+                transition={{ delay: index * 0.1 }}
+                className="group relative bg-slate-900 border border-slate-800 rounded-[2.5rem] overflow-hidden shadow-2xl"
+              >
+                {/* Visual Accent */}
+                <div className="absolute top-0 left-0 w-2 h-full bg-indigo-600" />
+
+                <div className="p-6 md:p-8">
+                  <div className="flex justify-between items-start mb-6">
+                    <div className="flex items-center gap-3">
+                      <div className="w-12 h-12 bg-slate-800 rounded-2xl flex items-center justify-center border border-slate-700">
+                        <UserCheck className="text-indigo-400" size={24} />
+                      </div>
+                      <div>
+                        <h3 className="font-black text-lg tracking-tight">
+                          {ride.passengerId?.name || "Guest Rider"}
+                        </h3>
+                        <p className="text-xs text-slate-500 font-bold">
+                          ID: {ride._id?.slice(-6).toUpperCase()}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <p className="text-3xl font-black italic tracking-tighter text-emerald-400">
+                        ৳{ride.fare}
+                      </p>
+                      <p className="text-[10px] font-black text-slate-500 uppercase">
+                        Estimated Fare
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Path Display */}
+                  <div className="space-y-6 relative mb-8">
+                    <div className="absolute left-[11px] top-6 bottom-6 w-0.5 bg-slate-800" />
+                    <div className="flex gap-4 items-start">
+                      <div className="w-6 h-6 rounded-full bg-emerald-500/20 border border-emerald-500/50 flex items-center justify-center z-10">
+                        <div className="w-2 h-2 bg-emerald-500 rounded-full" />
+                      </div>
+                      <div className="flex-1">
+                        <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest">
+                          Pickup
+                        </p>
+                        <p className="text-sm font-bold text-slate-200 line-clamp-1">
+                          {ride.pickupLocation}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="flex gap-4 items-start">
+                      <div className="w-6 h-6 rounded-full bg-rose-500/20 border border-rose-500/50 flex items-center justify-center z-10">
+                        <div className="w-2 h-2 bg-rose-500 rounded-full" />
+                      </div>
+                      <div className="flex-1">
+                        <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest">
+                          Drop-off
+                        </p>
+                        <p className="text-sm font-bold text-slate-200 line-clamp-1">
+                          {ride.dropoffLocation}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Buttons */}
+                  <div className="grid grid-cols-2 gap-4">
+                    <button
+                      onClick={() => handleAction("reject", ride._id as string)}
+                      className="flex items-center justify-center gap-2 py-4 rounded-2xl font-black uppercase text-xs tracking-widest bg-slate-800 hover:bg-rose-900/30 text-slate-400 hover:text-rose-400 transition-all border border-transparent hover:border-rose-900/50"
+                    >
+                      <XCircle size={18} /> Pass
+                    </button>
+                    <button
+                      onClick={() => handleAction("accept", ride._id as string)}
+                      className="flex items-center justify-center gap-2 py-4 rounded-2xl font-black uppercase text-xs tracking-widest bg-indigo-600 hover:bg-indigo-500 text-white shadow-lg shadow-indigo-900/20 hover:scale-[1.02] active:scale-95 transition-all"
+                    >
+                      <CheckCircle size={18} /> Accept
+                    </button>
+                  </div>
+                </div>
+              </motion.div>
+            ))
+          )}
+        </AnimatePresence>
       </div>
     </div>
   );
 };
 
-export default UpdateRides;
+const RequestSkeleton = () => (
+  <div className="min-h-screen bg-[#0F172A] p-6 space-y-6">
+    <div className="h-20 w-full bg-slate-900 rounded-3xl animate-pulse" />
+    <div className="h-64 w-full bg-slate-900 rounded-[2.5rem] animate-pulse" />
+    <div className="h-64 w-full bg-slate-900 rounded-[2.5rem] animate-pulse" />
+  </div>
+);
+
+export default RideRequests;
