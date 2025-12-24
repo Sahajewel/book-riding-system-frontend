@@ -4,6 +4,7 @@
 // import EarningsDashboard from "@/pages/driver/EarningDashboard";
 // import DriverRideHistory from "@/pages/driver/DriverHistory";
 // import RideRequests from "@/pages/driver/RideRequest";
+import UpdateRides from "@/pages/driver/UpdateRide";
 import type { ISidebarItem } from "@/types";
 import { lazy } from "react";
 // import RiderManagement from "@/pages/admin/RiderManagement";
@@ -11,7 +12,9 @@ import { lazy } from "react";
 // import DriverProfile from "@/pages/driver/DriverProfile";
 
 const DriverProfile = lazy(() => import("@/pages/driver/DriverProfile"));
-const DriverAvailability = lazy(() => import("@/pages/driver/DriverAvailability"));
+const DriverAvailability = lazy(
+  () => import("@/pages/driver/DriverAvailability")
+);
 const ActiveRide = lazy(() => import("@/pages/driver/ActiveRide"));
 const EarningsDashboard = lazy(() => import("@/pages/driver/EarningDashboard"));
 const DriverRideHistory = lazy(() => import("@/pages/driver/DriverHistory"));
@@ -33,7 +36,7 @@ export const DriverSideItems: ISidebarItem[] = [
       {
         title: "Ride History",
         url: "/driver/history",
-        component: DriverRideHistory, 
+        component: DriverRideHistory,
       },
       {
         title: "Earnings",
@@ -50,8 +53,11 @@ export const DriverSideItems: ISidebarItem[] = [
         url: "/driver/profile",
         component: DriverProfile,
       },
-    
+      {
+        title: "",
+        url: "/driver/update-ride",
+        component: UpdateRides,
+      },
     ],
   },
-  
 ];

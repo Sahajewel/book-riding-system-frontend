@@ -169,10 +169,10 @@ export const router = createBrowserRouter([
     Component: Settings,
     path: "/settings",
   },
-  {
-    Component: UpdateRides,
-    path: "/update-ride",
-  },
+  // {
+  //   Component: UpdateRides,
+  //   path: "/update-ride",
+  // },
   {
     Component: CookiePolicy,
     path: "/cookies",
