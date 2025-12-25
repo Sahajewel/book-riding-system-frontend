@@ -113,12 +113,6 @@ const ExplorePage: React.FC = () => {
                     <span className="font-bold text-slate-900 dark:text-white">
                       {service.price}
                     </span>
-                    <button
-                      onClick={handleBookingRedirect}
-                      className="flex items-center gap-2 font-bold text-indigo-600 hover:gap-3 transition-all"
-                    >
-                      Book Now <ArrowRight size={18} />
-                    </button>
                   </div>
                 </div>
               </div>
@@ -159,25 +153,6 @@ const ExplorePage: React.FC = () => {
           </div>
           {/* Background Decoration */}
           <div className="absolute -top-24 -right-24 w-64 h-64 bg-white/10 blur-3xl rounded-full"></div>
-        </div>
-
-        {/* --- Newsletter/CTA Section --- */}
-        <div className="mt-20 text-center">
-          <div className="inline-flex items-center gap-2 bg-white dark:bg-slate-900 px-6 py-3 rounded-full shadow-sm border border-slate-100 dark:border-slate-800 mb-8">
-            <Star className="text-yellow-500" fill="currentColor" size={16} />
-            <span className="text-sm font-bold">
-              Trusted by 50,000+ monthly riders
-            </span>
-          </div>
-          <h2 className="text-3xl lg:text-5xl font-bold mb-6">
-            Ready to start your journey?
-          </h2>
-          <button
-            onClick={handleBookingRedirect}
-            className="bg-indigo-600 text-white px-10 py-4 rounded-2xl font-black shadow-xl hover:scale-105 transition-transform"
-          >
-            Join RideX Today
-          </button>
         </div>
       </div>
     </div>

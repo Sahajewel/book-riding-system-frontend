@@ -50,11 +50,6 @@ const sitemapData = [
         href: "/services/ridex-shield",
         icon: <ShieldCheck size={18} />,
       },
-      {
-        label: "Fast Booking",
-        href: "/rider/bookings",
-        icon: <Zap size={18} />,
-      },
     ],
   },
   {
@@ -84,18 +79,7 @@ const sitemapData = [
   },
   {
     category: "Account Control",
-    links: [
-      {
-        label: "Profile Settings",
-        href: "/rider/profile",
-        icon: <User size={18} />,
-      },
-      {
-        label: "Ride History",
-        href: "/rider/my-rides",
-        icon: <FileText size={18} />,
-      },
-    ],
+    links: [],
   },
 ];
 
