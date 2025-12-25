@@ -205,20 +205,6 @@ const DriverAvailability = () => {
               color: "text-blue-500",
               bg: "bg-blue-500/10",
             },
-            {
-              label: "Earned Today",
-              val: `৳${profile?.totalEarnings || 0}`,
-              icon: <DollarSign size={22} />,
-              color: "text-emerald-500",
-              bg: "bg-emerald-500/10",
-            },
-            {
-              label: "Profile Status",
-              val: profile?.driverStatus?.toUpperCase() || "UNKNOWN",
-              icon: <Clock size={22} />,
-              color: "text-amber-500",
-              bg: "bg-amber-500/10",
-            },
           ].map((stat, i) => (
             <motion.div
               key={i}

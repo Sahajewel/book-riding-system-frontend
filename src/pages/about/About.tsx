@@ -46,26 +46,13 @@ export default function About() {
       color: "text-emerald-600",
       bg: "bg-emerald-50",
     },
-    {
-      label: "Active Rides",
-      value: statsData?.rides?.ongoing || 0,
-      icon: Activity,
-      color: "text-rose-600",
-      bg: "bg-rose-50",
-    },
+
     {
       label: "Completed Rides",
       value: statsData?.rides?.completed || 0,
       icon: CheckCircle,
       color: "text-amber-600",
       bg: "bg-amber-50",
-    },
-    {
-      label: "System Rating",
-      value: "4.9/5",
-      icon: Star,
-      color: "text-purple-600",
-      bg: "bg-purple-50",
     },
   ];
 

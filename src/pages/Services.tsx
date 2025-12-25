@@ -96,15 +96,6 @@ export default function Services() {
             <b>{stats?.users?.drivers || 0} verified drivers</b>. Choose the
             service that fits your schedule and budget.
           </p>
-
-          <div className="flex flex-wrap justify-center gap-4">
-            <Link
-              to="/rider/bookings"
-              className="px-8 py-4 bg-indigo-600 text-white rounded-2xl font-black text-sm shadow-xl shadow-indigo-200 dark:shadow-none hover:scale-105 transition-transform flex items-center gap-2"
-            >
-              Book Your First Ride <ArrowRight size={18} />
-            </Link>
-          </div>
         </div>
 
         {/* Background Decorative Elements */}
@@ -175,17 +166,6 @@ export default function Services() {
                   </li>
                 ))}
               </ul>
-
-              <Link
-                to="/rider/bookings"
-                className={`w-full py-4 rounded-xl font-black text-xs uppercase tracking-widest transition-all flex items-center justify-center gap-2 ${
-                  service.popular
-                    ? "bg-indigo-600 text-white shadow-lg shadow-indigo-200 dark:shadow-none"
-                    : "bg-slate-100 dark:bg-neutral-800 text-slate-900 dark:text-white hover:bg-indigo-600 hover:text-white"
-                }`}
-              >
-                Select {service.title.split(" ")[0]}
-              </Link>
             </motion.div>
           ))}
         </div>

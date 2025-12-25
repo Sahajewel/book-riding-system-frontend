@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import React, { useState, useEffect } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import {
   ChevronDown,
   Shield,
@@ -18,6 +18,8 @@ import { motion } from "framer-motion";
 import { toast } from "sonner";
 import DynamicStatsSection from "./DynamicSection";
 import { useGetDashboardStatsQuery } from "@/redux/analytics/analytics.api";
+import { useUserInfoQuery } from "@/redux/features/auth/auth.api";
+import { Button } from "@/components/ui/button";
 
 // --- Types ---
 interface NavItem {
@@ -31,6 +33,9 @@ const Home: React.FC = () => {
   const [isDarkMode, setIsDarkMode] = useState(false);
   const { data, isLoading } = useGetDashboardStatsQuery(undefined);
   const stats = data?.data || data;
+  const navigate = useNavigate();
+  const { data: userRes } = useUserInfoQuery(undefined);
+  const user = userRes?.data;
   // Scroll visibility for sticky navbar
   useEffect(() => {
     const handleScroll = () => setIsScrolled(window.scrollY > 20);
@@ -46,7 +51,29 @@ const Home: React.FC = () => {
     { label: "Safety", href: "/safety" },
     { label: "About", href: "/about" },
   ];
+  const handleBooking = () => {
+    // ১. ডাটা লোড হচ্ছে কি না চেক করা (সেফটি চেক)
+    if (isLoading) return;
 
+    // ২. যদি ইউজার লগইন না থাকে
+    if (!user?.email) {
+      toast.error("Please login first to book a ride!");
+      navigate("/login");
+      return;
+    }
+
+    // ৩. যদি লগইন থাকে কিন্তু সে 'RIDER' না হয় (যেমন Admin বা Driver)
+    if (user.role !== "RIDER") {
+      // এখানে navigate করছি না, তাই সে হোমপেজেই থাকবে।
+      toast.warning(
+        `Permission Denied! You are logged in as a ${user.role}. Only Riders can book trips.`
+      );
+      return;
+    }
+
+    // ৪. ইউজার যদি RIDER হয়, তবেই ড্যাশবোর্ডে যাবে
+    navigate("/rider/bookings");
+  };
   return (
     <div className={`${isDarkMode ? "dark" : ""} min-h-screen font-sans`}>
       <div className="bg-white dark:bg-slate-950 text-slate-900 dark:text-slate-100 transition-colors duration-300">
@@ -71,14 +98,24 @@ const Home: React.FC = () => {
                 Book a ride in seconds, track your driver in real-time, and
                 reach your destination safely with RideX.
               </p>
+
               <div className="flex flex-wrap gap-4 mt-10">
-                <Link
-                  to="/rider/bookings"
+                <Button
+                  onClick={handleBooking}
                   className="bg-indigo-600 text-white px-8 py-4 rounded-xl font-bold shadow-xl shadow-indigo-200 dark:shadow-none flex items-center gap-2 hover:scale-105 transition-transform"
                 >
                   Book Now <ArrowRight size={20} />
-                </Link>
-                <button className="flex items-center gap-2 font-bold px-8 py-4">
+                </Button>
+
+                {/* --- How it Works Button with Smooth Scroll --- */}
+                <button
+                  onClick={() =>
+                    document
+                      .getElementById("how-it-works-section")
+                      ?.scrollIntoView({ behavior: "smooth" })
+                  }
+                  className="flex items-center gap-2 font-bold px-8 py-4 hover:opacity-80 transition-all"
+                >
                   <PlayCircle className="text-indigo-600" /> How it Works
                 </button>
               </div>
@@ -95,7 +132,6 @@ const Home: React.FC = () => {
                 className="rounded-3xl shadow-2xl rotate-3 hover:rotate-0 transition-all duration-500"
               />
 
-              {/* ২. DYNAMIC DRIVER COUNT (অরিজিনাল ডাটাবেজ থেকে) */}
               <div className="absolute -bottom-6 -left-6 bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-xl flex items-center gap-4 border border-slate-100 dark:border-slate-700">
                 <div className="bg-green-100 dark:bg-green-900/30 p-3 rounded-full text-green-600 dark:text-green-400">
                   <CheckCircle2 size={24} />
@@ -105,7 +141,7 @@ const Home: React.FC = () => {
                     {isLoading ? (
                       <span className="animate-pulse">...</span>
                     ) : (
-                      `${stats?.users?.drivers || 0}+ Drivers` // এখানে তোর ডাটাবেজের অরিজিনাল সংখ্যা দেখাবে
+                      `${stats?.users?.drivers || 0}+ Drivers`
                     )}
                   </h4>
                   <p className="text-sm text-slate-500 dark:text-slate-400 font-medium">
@@ -173,7 +209,10 @@ const Home: React.FC = () => {
         </section>
 
         {/* 5. HOW IT WORKS */}
-        <section className="py-24 bg-slate-950 text-white rounded-[3rem] mx-4 lg:mx-10 overflow-hidden relative">
+        <section
+          id="how-it-works-section"
+          className="py-24 bg-slate-950 text-white rounded-[3rem] mx-4 lg:mx-10 overflow-hidden relative"
+        >
           <div className="container mx-auto px-6 relative z-10">
             <div className="flex flex-col lg:flex-row items-center gap-16">
               <div className="lg:w-1/2">
@@ -335,55 +374,75 @@ const Home: React.FC = () => {
           </div>
         </section>
 
-        {/* 8. TESTIMONIALS */}
-        <section className="py-24 bg-slate-50 dark:bg-slate-900/30">
-          <div className="container mx-auto px-6 text-center">
-            <h2 className="text-3xl lg:text-5xl font-bold mb-16">
-              Loved by Millions
-            </h2>
-            <div className="grid md:grid-cols-3 gap-8">
+        {/* 3.5 WHY CHOOSE US SECTION (Carousel এর পরিবর্তে) */}
+        <section className="py-24 bg-white dark:bg-slate-950">
+          <div className="container mx-auto px-6">
+            <div className="flex flex-col md:flex-row justify-between items-end mb-16 gap-6">
+              <div className="max-w-2xl">
+                <h2 className="text-4xl lg:text-5xl font-bold leading-tight">
+                  Experience the <span className="text-indigo-600">Future</span>{" "}
+                  of Mobility.
+                </h2>
+                <p className="text-slate-500 mt-4 text-lg">
+                  We combine cutting-edge technology with world-class service to
+                  make your every journey memorable.
+                </p>
+              </div>
+              <div className="hidden md:block">
+                <Link
+                  to="/about"
+                  className="text-indigo-600 font-bold flex items-center gap-2 group"
+                >
+                  See our story{" "}
+                  <ArrowRight className="group-hover:translate-x-2 transition-transform" />
+                </Link>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
               {[
                 {
-                  name: "Arif Ahmed",
-                  role: "Daily Rider",
-                  quote:
-                    "The best UI for a ride app. So fast and the drivers are very polite!",
+                  title: "Fixed Pricing",
+                  desc: "No hidden costs. You see the price before you book.",
+                  icon: <Zap className="text-amber-500" />,
+                  bg: "bg-amber-50 dark:bg-amber-900/10",
                 },
                 {
-                  name: "Samantha J.",
-                  role: "Driver Partner",
-                  quote:
-                    "I love the flexibility and transparent earnings. RideX changed my life.",
+                  title: "Verified Drivers",
+                  desc: "Every driver goes through a multi-step background check.",
+                  icon: <Shield className="text-blue-500" />,
+                  bg: "bg-blue-50 dark:bg-blue-900/10",
                 },
                 {
-                  name: "Karim Ullah",
-                  role: "Business User",
-                  quote:
-                    "Punctual and professional. Ideal for reaching my corporate meetings.",
+                  title: "24/7 Support",
+                  desc: "Dedicated help center to assist you at any time of the day.",
+                  icon: <Smartphone className="text-purple-500" />,
+                  bg: "bg-purple-50 dark:bg-purple-900/10",
                 },
-              ].map((t, i) => (
-                <div
-                  key={i}
-                  className="bg-white dark:bg-slate-900 p-10 rounded-[2rem] shadow-lg text-left border border-slate-100 dark:border-slate-800"
+                {
+                  title: "Fast Pickup",
+                  desc: "Average wait time is less than 5 minutes in city areas.",
+                  icon: <Star className="text-green-500" />,
+                  bg: "bg-green-50 dark:bg-green-900/10",
+                },
+              ].map((feature, index) => (
+                <motion.div
+                  key={index}
+                  whileHover={{ y: -10 }}
+                  className="p-8 rounded-[2rem] border border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/50"
                 >
-                  <div className="flex gap-1 text-yellow-500 mb-6">
-                    {[...Array(5)].map((_, i) => (
-                      <Star key={i} size={18} fill="currentColor" />
-                    ))}
+                  <div
+                    className={`${feature.bg} w-14 h-14 rounded-2xl flex items-center justify-center mb-6`}
+                  >
+                    {React.cloneElement(feature.icon as React.ReactElement, {
+                      size: 28,
+                    })}
                   </div>
-                  <p className="text-lg italic text-slate-600 dark:text-slate-400">
-                    "{t.quote}"
+                  <h3 className="text-xl font-bold mb-3">{feature.title}</h3>
+                  <p className="text-slate-500 dark:text-slate-400 text-sm leading-relaxed">
+                    {feature.desc}
                   </p>
-                  <div className="mt-8 flex items-center gap-4">
-                    <div className="w-12 h-12 rounded-full bg-indigo-100 dark:bg-indigo-900 flex items-center justify-center font-bold text-indigo-600">
-                      {t.name.charAt(0)}
-                    </div>
-                    <div>
-                      <h5 className="font-bold">{t.name}</h5>
-                      <p className="text-xs text-slate-500">{t.role}</p>
-                    </div>
-                  </div>
-                </div>
+                </motion.div>
               ))}
             </div>
           </div>

@@ -7,11 +7,20 @@ const DriverDashboard = () => {
       {/* Sidebar */}
       <aside className="w-64 bg-gray-900 text-white p-4">
         <h2 className="text-xl font-bold mb-6">Driver Panel</h2>
+
         <nav className="flex flex-col space-y-3">
-          <Link to="availability" className="hover:text-yellow-400">Availability</Link>
-          <Link to="rides" className="hover:text-yellow-400">Ride Requests</Link>
-          <Link to="history" className="hover:text-yellow-400">Ride History</Link>
-          <Link to="earnings" className="hover:text-yellow-400">Earnings</Link>
+          <Link to="availability" className="hover:text-yellow-400">
+            Availability
+          </Link>
+          <Link to="rides" className="hover:text-yellow-400">
+            Ride Requests
+          </Link>
+          <Link to="history" className="hover:text-yellow-400">
+            Ride History
+          </Link>
+          <Link to="earnings" className="hover:text-yellow-400">
+            Earnings
+          </Link>
         </nav>
       </aside>
 

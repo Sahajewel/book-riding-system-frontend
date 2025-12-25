@@ -29,11 +29,6 @@ const PrivacyPolicy = () => {
     { id: "intro", label: "Overview", icon: Eye },
     { id: "data-we-collect", label: "Data Collection", icon: Smartphone },
     { id: "how-we-use", label: "Usage", icon: UserCheck },
-    { id: "location", label: "GPS & Tracking", icon: MapPin },
-    { id: "security", label: "Security", icon: Lock },
-    { id: "your-rights", label: "Your Rights", icon: ShieldCheck },
-    { id: "retention", label: "Data Retention", icon: Trash2 },
-    { id: "intl", label: "Global", icon: Globe },
   ];
 
   return (

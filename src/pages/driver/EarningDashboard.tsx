@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 // src/pages/driver/EarningsDashboard.tsx
 import { useState, useMemo } from "react";
 import { useGetDriverRidesQuery } from "@/redux/features/driver/driver.api";
@@ -9,7 +10,6 @@ import {
   CartesianGrid,
   Tooltip,
   ResponsiveContainer,
-  Cell,
 } from "recharts";
 import {
   format,
@@ -24,12 +24,11 @@ import {
   TrendingUp,
   Calendar,
   MapPin,
-  Clock,
   ArrowUpRight,
   PieChart,
   Activity,
 } from "lucide-react";
-import { RideStatus, type IRide } from "@/types/ride.interface";
+import { type IRide } from "@/types/ride.interface";
 import { motion } from "framer-motion";
 
 const EarningsDashboard = () => {
@@ -107,7 +106,21 @@ const EarningsDashboard = () => {
   }, [completedRides, selectedPeriod]);
 
   if (ridesLoading) return <SkeletonLoader />;
-
+  const CustomTooltip = ({ active, payload, label }: any) => {
+    if (active && payload && payload.length) {
+      return (
+        <div className="bg-white dark:bg-slate-900 p-3 border border-slate-200 dark:border-slate-800 rounded-xl shadow-2xl">
+          <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">
+            {label}
+          </p>
+          <p className="text-sm font-black text-indigo-600 dark:text-indigo-400">
+            Earnings: ৳{payload[0].value.toLocaleString()}
+          </p>
+        </div>
+      );
+    }
+    return null;
+  };
   return (
     <div className="min-h-screen bg-[#F8FAFC] dark:bg-slate-950 p-4 lg:p-10">
       <div className="max-w-7xl mx-auto">
@@ -229,13 +242,8 @@ const EarningsDashboard = () => {
                     tick={{ fill: "#94A3B8", fontSize: 12, fontWeight: 700 }}
                   />
                   <Tooltip
-                    cursor={{ fill: "#F1F5F9" }}
-                    contentStyle={{
-                      borderRadius: "16px",
-                      border: "none",
-                      boxShadow: "0 10px 15px -3px rgba(0,0,0,0.1)",
-                      fontWeight: "bold",
-                    }}
+                    content={<CustomTooltip />}
+                    cursor={{ fill: "rgba(79, 70, 229, 0.1)" }} // হোভার করলে বারের পেছনে হালকা একটা শেড দিবে
                   />
                   <Bar
                     dataKey="earnings"
@@ -290,9 +298,6 @@ const EarningsDashboard = () => {
             <h3 className="text-lg font-black italic uppercase tracking-tighter">
               Recent <span className="text-indigo-600">Payouts</span>
             </h3>
-            <button className="text-xs font-black text-indigo-600 uppercase tracking-widest hover:underline">
-              View All
-            </button>
           </div>
           <div className="overflow-x-auto">
             <table className="w-full text-left">

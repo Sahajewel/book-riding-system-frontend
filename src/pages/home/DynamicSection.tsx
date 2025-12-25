@@ -23,12 +23,7 @@ const DynamicStatsSection = () => {
       description: "Successful trips",
       color: "text-emerald-600",
     },
-    {
-      label: "Active Rides",
-      value: stats?.rides?.ongoing || 0, // লাইভ বা অনগোয়িং রাইড
-      description: "Currently on road",
-      color: "text-blue-600",
-    },
+
     {
       label: "Total Users",
       value: stats?.users?.total || 0, // এখান থেকে '10' আসবে
@@ -49,7 +44,7 @@ const DynamicStatsSection = () => {
   return (
     <section className="py-16 bg-white dark:bg-slate-950 border-y border-slate-100 dark:border-slate-900">
       <div className="container mx-auto px-6">
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-12">
+        <div className="grid grid-cols-2 lg:grid-cols-3 gap-12">
           {statItems.map((item, i) => (
             <motion.div
               key={i}

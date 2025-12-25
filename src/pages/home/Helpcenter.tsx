@@ -12,6 +12,7 @@ import {
   PhoneCall,
   ChevronRight,
 } from "lucide-react";
+import { Link } from "react-router";
 
 const categories = [
   {
@@ -61,25 +62,6 @@ const HelpCenter: React.FC = () => {
           >
             How can we <span className="text-indigo-600">help?</span>
           </motion.h1>
-
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.1 }}
-            className="relative max-w-xl mx-auto"
-          >
-            <Search
-              className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-400"
-              size={20}
-            />
-            <input
-              type="text"
-              placeholder="Search for topics (e.g. 'refund policy')"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-14 pr-6 py-5 rounded-[2rem] bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-xl focus:ring-2 focus:ring-indigo-500 outline-none transition-all"
-            />
-          </motion.div>
         </div>
 
         {/* --- Category Grid --- */}
@@ -159,9 +141,12 @@ const HelpCenter: React.FC = () => {
                   Get instant answers from our support agents. Average response
                   time: 2 mins.
                 </p>
-                <button className="bg-white text-indigo-600 w-full py-4 rounded-2xl font-black shadow-lg hover:bg-indigo-50 transition-colors">
+                <Link
+                  to="/contact"
+                  className="bg-white text-indigo-600 w-full py-4 rounded-2xl font-black shadow-lg hover:bg-indigo-50 transition-colors"
+                >
                   Start Conversation
-                </button>
+                </Link>
               </div>
               {/* Decoration */}
               <div className="absolute -bottom-10 -right-10 w-40 h-40 bg-white/10 blur-3xl rounded-full"></div>

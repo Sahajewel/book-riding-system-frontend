@@ -162,10 +162,10 @@ export default function RiderProfile() {
         <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-indigo-50 text-indigo-600 text-xs font-bold uppercase tracking-wider animate-pulse">
           <Sparkles size={14} /> Personal Account
         </div>
-        <h1 className="text-4xl font-black tracking-tight text-slate-900">
+        <h1 className="text-4xl font-black tracking-tight text-indigo-500">
           Account Control Center
         </h1>
-        <p className="text-slate-500 max-w-md">
+        <p className="text-indigo-500 max-w-md">
           Customize your digital presence and keep your security credentials up
           to date.
         </p>

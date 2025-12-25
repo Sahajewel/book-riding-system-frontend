@@ -62,21 +62,6 @@ const Intercity = () => {
             </motion.div>
           ))}
         </div>
-
-        <div className="mt-20 bg-emerald-500 rounded-[3rem] p-12 text-white flex flex-col md:flex-row items-center justify-between gap-8">
-          <div className="text-left">
-            <h2 className="text-3xl font-bold mb-2">Planning a long trip?</h2>
-            <p className="text-emerald-100">
-              Get 15% off on your first Intercity booking.
-            </p>
-          </div>
-
-          <Link to="/rider/bookings">
-            <button className="bg-white text-emerald-600 px-8 py-4 rounded-2xl font-black hover:bg-emerald-50 transition-colors flex items-center gap-2">
-              Reserve Now <ArrowRight size={20} />
-            </button>
-          </Link>
-        </div>
       </div>
     </div>
   );

@@ -197,7 +197,7 @@ const RequestRide = () => {
           <motion.h2
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
-            className="text-4xl md:text-5xl font-black tracking-tighter uppercase italic text-slate-900 mb-2"
+            className="text-4xl md:text-5xl font-black tracking-tighter uppercase italic text-[#4F39F6] mb-2"
           >
             {showPayment ? "Secure Payment" : "Book Your Ride"}
           </motion.h2>
@@ -208,7 +208,7 @@ const RequestRide = () => {
           </p>
         </div>
 
-        <div className="bg-white rounded-[3rem] border border-slate-100 shadow-[0_50px_100px_-20px_rgba(0,0,0,0.12)] p-8 md:p-12 transition-all">
+        <div className=" rounded-[3rem] border border-slate-100 shadow-[0_50px_100px_-20px_rgba(0,0,0,0.12)] p-8 md:p-12 transition-all">
           {!showPayment ? (
             <motion.div
               initial={{ opacity: 0 }}

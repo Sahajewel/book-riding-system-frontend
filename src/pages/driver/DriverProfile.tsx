@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 // src/pages/driver/DriverProfile.tsx
 import { useState, useEffect } from "react";
 import {
@@ -139,19 +140,6 @@ const DriverProfile = () => {
                   icon={<CheckCircle2 size={14} />}
                 />
               </div>
-            </div>
-
-            <div className="bg-emerald-500 rounded-[2.5rem] p-8 text-white shadow-lg shadow-emerald-100">
-              <Banknote className="mb-4 opacity-70" size={32} />
-              <p className="text-sm font-black uppercase opacity-70 tracking-widest">
-                Total Earnings
-              </p>
-              <h3 className="text-4xl font-black italic tracking-tighter mt-1">
-                ৳{driverProfile?.totalEarnings || "0"}
-              </h3>
-              <button className="mt-6 w-full py-3 bg-white/20 hover:bg-white/30 rounded-2xl font-black text-xs uppercase tracking-widest transition-all">
-                Withdraw Funds
-              </button>
             </div>
           </div>
 

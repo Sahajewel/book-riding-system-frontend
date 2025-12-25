@@ -143,21 +143,6 @@ const RideXShield = () => {
           </div>
         </div>
       </section>
-
-      {/* --- Final CTA --- */}
-      <section className="bg-white dark:bg-slate-900 py-20 border-t border-slate-100 dark:border-slate-800">
-        <div className="container mx-auto px-6 text-center">
-          <h2 className="text-4xl font-black mb-6 italic">
-            Ready to ride with Shield?
-          </h2>
-
-          <Link to="/rider/bookings">
-            <button className="bg-indigo-600 text-white px-10 py-5 rounded-3xl font-black shadow-2xl shadow-indigo-500/40 hover:scale-105 active:scale-95 transition-all flex items-center gap-3 mx-auto">
-              Get Protected Now <ArrowRight size={20} />
-            </button>
-          </Link>
-        </div>
-      </section>
     </div>
   );
 };

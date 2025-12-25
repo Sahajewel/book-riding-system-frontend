@@ -7,6 +7,7 @@
 import UpdateRides from "@/pages/driver/UpdateRide";
 import type { ISidebarItem } from "@/types";
 import { lazy } from "react";
+
 // import RiderManagement from "@/pages/admin/RiderManagement";
 // import RiderProfile from "@/pages/rider/Profile";
 // import DriverProfile from "@/pages/driver/DriverProfile";
@@ -18,7 +19,8 @@ const DriverAvailability = lazy(
 const ActiveRide = lazy(() => import("@/pages/driver/ActiveRide"));
 const EarningsDashboard = lazy(() => import("@/pages/driver/EarningDashboard"));
 const DriverRideHistory = lazy(() => import("@/pages/driver/DriverHistory"));
-const RideRequests = lazy(() => import("@/pages/driver/RideRequest"));
+// const RideRequests = lazy(() => import("@/pages/driver/RideRequest"));
+
 export const DriverSideItems: ISidebarItem[] = [
   {
     title: "Driver Panel",
@@ -28,10 +30,15 @@ export const DriverSideItems: ISidebarItem[] = [
         url: "/driver/availability",
         component: DriverAvailability,
       },
+      // {
+      //   title: "Ride Requests",
+      //   url: "/driver/rides",
+      //   component: RideRequests,
+      // },
       {
-        title: "Ride Requests",
-        url: "/driver/rides",
-        component: RideRequests,
+        title: "Active Ride",
+        url: "/driver/active-ride",
+        component: ActiveRide,
       },
       {
         title: "Ride History",
@@ -43,11 +50,7 @@ export const DriverSideItems: ISidebarItem[] = [
         url: "/driver/earnings",
         component: EarningsDashboard,
       },
-      {
-        title: "Active Ride",
-        url: "/driver/active-ride",
-        component: ActiveRide,
-      },
+
       {
         title: "Profile Management",
         url: "/driver/profile",

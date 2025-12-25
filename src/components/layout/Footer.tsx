@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
+import { useState } from "react";
 import { Link } from "react-router";
 import {
   Facebook,
@@ -9,14 +11,29 @@ import {
   ArrowRight,
   Send,
   Linkedin,
-  Youtube,
 } from "lucide-react";
 import Logo from "@/assets/icon/Logo";
-import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { toast } from "sonner";
 
 export default function Footer() {
   const currentYear = new Date().getFullYear();
+  const [email, setEmail] = useState("");
+
+  // নিউজলেটার হ্যান্ডলার
+  const handleSubscribe = (e: React.FormEvent) => {
+    e.preventDefault();
+
+    // ইমেইল খালি কি না বা সঠিক ফরম্যাটে আছে কি না চেক
+    if (!email || !email.includes("@")) {
+      toast.error("Please enter a valid email address!");
+      return;
+    }
+
+    // সাকসেস মেসেজ এবং ইনপুট ক্লিয়ার
+    toast.success("Thank you! You've successfully subscribed.");
+    setEmail("");
+  };
 
   return (
     <footer className="relative bg-[#05070a] text-slate-300 pt-20 overflow-hidden">
@@ -39,7 +56,8 @@ export default function Footer() {
               sustainable, and premium rides at the tap of a button. Join
               thousands of happy riders today.
             </p>
-            {/* Social Icons with Tooltips look */}
+
+            {/* Social Icons */}
             <div className="flex gap-4">
               {[
                 {
@@ -121,23 +139,30 @@ export default function Footer() {
               </ul>
             </div>
 
-            {/* Newsletter */}
+            {/* Newsletter Section */}
             <div className="space-y-6">
               <h5 className="text-white font-bold text-lg">Stay Updated</h5>
               <p className="text-sm text-slate-400">
                 Subscribe to get latest news and offers.
               </p>
-              <div className="flex flex-col gap-2">
+              <form onSubmit={handleSubscribe} className="flex flex-col gap-2">
                 <div className="relative">
                   <Input
+                    type="email"
+                    required
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
                     placeholder="Email Address"
-                    className="bg-white/5 border-white/10 focus:ring-indigo-500 rounded-xl pr-10"
+                    className="bg-white/5 border-white/10 focus:ring-indigo-500 rounded-xl pr-10 text-slate-200"
                   />
-                  <button className="absolute right-3 top-1/2 -translate-y-1/2 text-indigo-500 hover:text-indigo-400 transition-colors">
+                  <button
+                    type="submit"
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-indigo-500 hover:text-indigo-400 transition-colors"
+                  >
                     <Send size={18} />
                   </button>
                 </div>
-              </div>
+              </form>
             </div>
           </div>
         </div>

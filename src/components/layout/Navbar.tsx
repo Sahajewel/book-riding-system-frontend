@@ -44,6 +44,7 @@ const navigationLinks = [
   { href: "/about", label: "About" },
   { href: "/faq", label: "FAQ" },
   { href: "/contact", label: "Contact" },
+  { href: "/pricing", label: "Pricing" },
 ];
 
 // --- লিঙ্কগুলো এখানে অ্যাড করা হয়েছে ---
@@ -58,7 +59,7 @@ const serviceMegaMenu = [
     title: "Intercity",
     desc: "Go beyond city boundaries",
     icon: <Zap className="text-amber-500" />,
-    href: "/services/intercity",
+    href: "/pricing",
   },
   {
     title: "RideX Shield",
@@ -238,7 +239,7 @@ export default function Navbar() {
                   </Button>
                   <Button
                     asChild
-                    className="rounded-full bg-indigo-600 hover:bg-indigo-700 shadow-md font-bold px-6"
+                    className="rounded-full bg-indigo-700 text-white hover:bg-indigo-600 shadow-md font-bold px-6"
                   >
                     <Link to="/register">Sign Up</Link>
                   </Button>
@@ -259,6 +260,7 @@ export default function Navbar() {
       </div>
 
       {/* 4. Mobile Overlay Menu */}
+      {/* 4. Mobile Overlay Menu */}
       <AnimatePresence>
         {isMobileMenuOpen && (
           <motion.div
@@ -267,16 +269,45 @@ export default function Navbar() {
             exit={{ opacity: 0, height: 0 }}
             className="absolute top-full left-0 right-0 bg-white dark:bg-slate-950 border-b p-6 lg:hidden flex flex-col gap-4 shadow-2xl overflow-hidden"
           >
+            {/* ইউজার লগইন থাকলে প্রোফাইল সেকশন দেখাবে */}
+            {data?.data?.email && (
+              <div className="flex items-center gap-4 p-4 bg-indigo-50 dark:bg-slate-900 rounded-2xl mb-2">
+                <div className="w-12 h-12 bg-indigo-600 rounded-full flex items-center justify-center text-lg text-white font-bold">
+                  {data.data.name?.charAt(0)}
+                </div>
+                <div>
+                  <p className="font-black text-slate-900 dark:text-white leading-none">
+                    {data.data.name}
+                  </p>
+                  <p className="text-xs text-slate-500 mt-1">
+                    {data.data.role}
+                  </p>
+                </div>
+              </div>
+            )}
+
+            {/* জেনারেল লিঙ্কসমূহ */}
             {navigationLinks.map((link) => (
               <Link
                 key={link.href}
                 to={link.href}
                 onClick={() => setIsMobileMenuOpen(false)}
-                className="text-lg font-bold hover:text-indigo-600 transition-colors flex items-center gap-3"
+                className="text-lg font-bold hover:text-indigo-600 transition-colors flex items-center gap-3 px-2"
               >
                 <Info size={18} className="text-slate-400" /> {link.label}
               </Link>
             ))}
+
+            {/* ড্যাশবোর্ড লিঙ্ক (লগইন থাকলে) */}
+            {data?.data?.email && (
+              <Link
+                to={`/${data.data.role.toLowerCase()}`}
+                onClick={() => setIsMobileMenuOpen(false)}
+                className="text-lg font-bold text-indigo-600 flex items-center gap-3 px-2"
+              >
+                <Zap size={18} /> Dashboard
+              </Link>
+            )}
 
             {/* মোবাইল মেনুতে সার্ভিস সেকশন */}
             <div className="pt-2 border-t border-slate-100 dark:border-slate-800">
@@ -299,20 +330,39 @@ export default function Navbar() {
             </div>
 
             <hr className="border-slate-100 dark:border-slate-800" />
-            {!data?.data?.email && (
+
+            {/* লগইন/রেজিস্টার অথবা লগআউট বাটন লজিক */}
+            {!data?.data?.email ? (
               <div className="grid grid-cols-2 gap-4">
                 <Button
                   asChild
                   variant="outline"
                   className="rounded-xl font-bold"
+                  onClick={() => setIsMobileMenuOpen(false)}
                 >
                   <Link to="/login">Login</Link>
                 </Button>
-                <Button asChild className="rounded-xl bg-indigo-600 font-bold">
+                <Button
+                  asChild
+                  className="rounded-xl bg-indigo-400 text-white font-bold"
+                  onClick={() => setIsMobileMenuOpen(false)}
+                >
                   <Link to="/register">Register</Link>
                 </Button>
               </div>
+            ) : (
+              <Button
+                onClick={() => {
+                  handleLogout();
+                  setIsMobileMenuOpen(false);
+                }}
+                variant="destructive"
+                className="rounded-xl font-bold w-full flex items-center gap-2"
+              >
+                <X size={18} /> Logout
+              </Button>
             )}
+
             <Button
               variant="ghost"
               className="justify-start gap-3 font-bold text-slate-500"

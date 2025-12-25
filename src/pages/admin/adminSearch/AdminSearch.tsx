@@ -1,13 +1,14 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
+/* eslint-disable @typescript-eslint/no-explicit-any */
 // src/pages/admin/UserManagement.tsx
-import React, { useState } from 'react';
+import React, { useState } from "react";
 
-
-import type { FilterParams } from '@/types/filter';
-import { 
-  useBlockUserMutation, 
-  useDeleteUserMutation, 
-  useGetUsersQuery, 
-  useUnblockUserMutation 
+import type { FilterParams } from "@/types/filter";
+import {
+  useBlockUserMutation,
+  useDeleteUserMutation,
+  useGetUsersQuery,
+  useUnblockUserMutation,
 } from "@/redux/admin/admin.api";
 import type { IUser } from "@/types/user.interface";
 import {
@@ -19,7 +20,7 @@ import {
   UserX,
   Trash2,
   RefreshCw,
-  Loader2
+  Loader2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -36,24 +37,29 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import AdminSearchFilter from './AdminSearchFilter';
-import { usersFilterConfig } from '@/config/filterConfig';
+import AdminSearchFilter from "./AdminSearchFilter";
+import { usersFilterConfig } from "@/config/filterConfig";
+import { toast } from "sonner";
 
 const AdminSearch: React.FC = () => {
   // RTK Query hooks
-  const { data: usersResponse, isLoading, refetch } = useGetUsersQuery(undefined);
+  const {
+    data: usersResponse,
+    isLoading,
+    refetch,
+  } = useGetUsersQuery(undefined);
   const [blockUser] = useBlockUserMutation();
   const [unblockUser] = useUnblockUserMutation();
   const [deleteUser] = useDeleteUserMutation();
-  
+
   // Filter state
   const [filterParams, setFilterParams] = useState<FilterParams>({
-    search: '',
-    sortBy: 'createdAt',
-    sortOrder: 'desc',
-    filters: {}
+    search: "",
+    sortBy: "createdAt",
+    sortOrder: "desc",
+    filters: {},
   });
-  
+
   // UI state
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [selectedUser, setSelectedUser] = useState<IUser | null>(null);
@@ -64,110 +70,114 @@ const AdminSearch: React.FC = () => {
   const filteredUsers = users
     .filter((user: IUser) => {
       // Search filter
-      const matchesSearch = !filterParams.search || 
+      const matchesSearch =
+        !filterParams.search ||
         user.name.toLowerCase().includes(filterParams.search.toLowerCase()) ||
         user.email.toLowerCase().includes(filterParams.search.toLowerCase());
-      
+
       // Role filter
       const roleFilter = filterParams.filters.role;
       const matchesRole = !roleFilter || user.role === roleFilter;
-      
+
       // Status filter
       const statusFilter = filterParams.filters.status;
-      const matchesStatus = !statusFilter || 
-        (Array.isArray(statusFilter) 
-          ? statusFilter.includes(user.isBlocked ? 'blocked' : 'active')
-          : statusFilter === (user.isBlocked ? 'blocked' : 'active'));
-      
+      const matchesStatus =
+        !statusFilter ||
+        (Array.isArray(statusFilter)
+          ? statusFilter.includes(user.isBlocked ? "blocked" : "active")
+          : statusFilter === (user.isBlocked ? "blocked" : "active"));
+
       // Date filter (example - you'll need to adjust based on your user model)
       const dateFilter = filterParams.filters.createdAt;
       let matchesDate = true;
       if (dateFilter && user.createdAt) {
         const userDate = new Date(user.createdAt);
-        if (dateFilter.from) matchesDate = matchesDate && userDate >= new Date(dateFilter.from);
-        if (dateFilter.to) matchesDate = matchesDate && userDate <= new Date(dateFilter.to);
+        if (dateFilter.from)
+          matchesDate = matchesDate && userDate >= new Date(dateFilter.from);
+        if (dateFilter.to)
+          matchesDate = matchesDate && userDate <= new Date(dateFilter.to);
       }
-      
+
       return matchesSearch && matchesRole && matchesStatus && matchesDate;
     })
     .sort((a: IUser, b: IUser) => {
       // Apply sorting from filterParams
       const field = filterParams.sortBy;
-      const direction = filterParams.sortOrder === 'asc' ? 1 : -1;
-      
+      const direction = filterParams.sortOrder === "asc" ? 1 : -1;
+
       let aValue: any = a;
       let bValue: any = b;
-      
+
       // Handle nested properties if needed
-      if (field.includes('.')) {
-        const parts = field.split('.');
+      if (field.includes(".")) {
+        const parts = field.split(".");
         aValue = parts.reduce((obj, part) => obj && obj[part], a);
         bValue = parts.reduce((obj, part) => obj && obj[part], b);
       } else {
         aValue = a[field as keyof IUser];
         bValue = b[field as keyof IUser];
       }
-      
-      if (typeof aValue === 'string') {
+
+      if (typeof aValue === "string") {
         return aValue.localeCompare(bValue) * direction;
       }
-      
+
       return (aValue - bValue) * direction;
     });
 
   const handleFilterChange = (filters: FilterParams) => {
     setFilterParams(filters);
     // Here you would typically make an API call with the filter parameters
-    console.log('Filters changed:', filters);
+    console.log("Filters changed:", filters);
   };
 
   const handleBlockUser = async (userId: string) => {
     try {
       await blockUser(userId).unwrap();
-      alert("User blocked successfully");
+      toast("User blocked successfully");
       refetch();
     } catch (error) {
-      alert("Failed to block user");
+      toast("Failed to block user");
     }
   };
 
   const handleUnblockUser = async (userId: string) => {
     try {
       await unblockUser(userId).unwrap();
-      alert("User unblocked successfully");
+      toast("User unblocked successfully");
       refetch();
     } catch (error) {
-      alert("Failed to unblock user");
+      toast("Failed to unblock user");
     }
   };
 
   const handleDeleteUser = async () => {
     if (!selectedUser) return;
-    
+
     try {
       await deleteUser(selectedUser._id).unwrap();
-      alert("User deleted successfully");
+      toast("User deleted successfully");
       refetch();
       setDeleteDialogOpen(false);
       setSelectedUser(null);
     } catch (error) {
-      alert("Failed to delete user");
+      toast("Failed to delete user");
     }
   };
 
   const getRoleBadge = (role: string) => {
     const roleConfig = {
-      'ADMIN': { variant: "destructive" as const, text: "Admin" },
-      'RIDER': { variant: "secondary" as const, text: "Rider" },
-      'DRIVER': { variant: "secondary" as const, text: "Driver" },
-      'USER': { variant: "outline" as const, text: "User" }
+      ADMIN: { variant: "destructive" as const, text: "Admin" },
+      RIDER: { variant: "secondary" as const, text: "Rider" },
+      DRIVER: { variant: "secondary" as const, text: "Driver" },
+      USER: { variant: "outline" as const, text: "User" },
     };
-    
-    const config = roleConfig[role as keyof typeof roleConfig] || { 
-      variant: "outline" as const, 
-      text: role 
+
+    const config = roleConfig[role as keyof typeof roleConfig] || {
+      variant: "outline" as const,
+      text: role,
     };
-    
+
     return <Badge variant={config.variant}>{config.text}</Badge>;
   };
 
@@ -269,9 +279,15 @@ const AdminSearch: React.FC = () => {
                   <th className="h-12 px-4 text-left align-middle font-medium">
                     Role
                   </th>
-                  <th className="h-12 px-4 text-left align-middle font-medium">Status</th>
-                  <th className="h-12 px-4 text-left align-middle font-medium">Created</th>
-                  <th className="h-12 px-4 text-right align-middle font-medium">Actions</th>
+                  <th className="h-12 px-4 text-left align-middle font-medium">
+                    Status
+                  </th>
+                  <th className="h-12 px-4 text-left align-middle font-medium">
+                    Created
+                  </th>
+                  <th className="h-12 px-4 text-right align-middle font-medium">
+                    Actions
+                  </th>
                 </tr>
               </thead>
               <tbody>
@@ -302,14 +318,20 @@ const AdminSearch: React.FC = () => {
                       {getRoleBadge(user.role)}
                     </td>
                     <td className="p-4 align-middle">
-                      <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold ${
-                        user.isBlocked ? "bg-red-100 text-red-800" : "bg-green-100 text-green-800"
-                      }`}>
+                      <span
+                        className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold ${
+                          user.isBlocked
+                            ? "bg-red-100 text-red-800"
+                            : "bg-green-100 text-green-800"
+                        }`}
+                      >
                         {user.isBlocked ? "Blocked" : "Active"}
                       </span>
                     </td>
                     <td className="p-4 align-middle">
-                      {user.createdAt ? new Date(user.createdAt).toLocaleDateString() : 'N/A'}
+                      {user.createdAt
+                        ? new Date(user.createdAt).toLocaleDateString()
+                        : "N/A"}
                     </td>
                     <td className="p-4 align-middle text-right">
                       <DropdownMenu>
@@ -320,12 +342,16 @@ const AdminSearch: React.FC = () => {
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
                           {user.isBlocked ? (
-                            <DropdownMenuItem onClick={() => handleUnblockUser(user._id)}>
+                            <DropdownMenuItem
+                              onClick={() => handleUnblockUser(user._id)}
+                            >
                               <UserCheck className="h-4 w-4 mr-2" />
                               Unblock User
                             </DropdownMenuItem>
                           ) : (
-                            <DropdownMenuItem onClick={() => handleBlockUser(user._id)}>
+                            <DropdownMenuItem
+                              onClick={() => handleBlockUser(user._id)}
+                            >
                               <UserX className="h-4 w-4 mr-2" />
                               Block User
                             </DropdownMenuItem>
@@ -365,19 +391,19 @@ const AdminSearch: React.FC = () => {
       {deleteDialogOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center">
           {/* Backdrop */}
-          <div 
+          <div
             className="fixed inset-0 bg-black/80 animate-in fade-in-0"
             onClick={() => setDeleteDialogOpen(false)}
           />
-          
+
           {/* Dialog Content */}
           <div className="fixed left-[50%] top-[50%] z-50 grid w-full max-w-lg translate-x-[-50%] translate-y-[-50%] gap-4 border bg-white p-6 shadow-lg rounded-lg">
             {/* Header */}
             <div className="flex flex-col space-y-2">
               <h2 className="text-lg font-semibold">Are you sure?</h2>
               <p className="text-sm ">
-                This action cannot be undone. This will permanently delete the user
-                account for {selectedUser?.name} ({selectedUser?.email}).
+                This action cannot be undone. This will permanently delete the
+                user account for {selectedUser?.name} ({selectedUser?.email}).
               </p>
             </div>
 
@@ -399,8 +425,6 @@ const AdminSearch: React.FC = () => {
           </div>
         </div>
       )}
-
-    
     </div>
   );
 };

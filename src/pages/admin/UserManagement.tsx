@@ -210,29 +210,43 @@ export default function UserManagement() {
               />
             </div>
             <div className="flex flex-wrap gap-3">
-              <div className="flex items-center gap-2 bg-slate-50 p-1 rounded-xl border border-slate-100">
+              <div className="flex items-center gap-2 bg-indigo-500 p-1 rounded-xl border border-slate-100">
                 <Filter size={14} className="ml-2 text-slate-400" />
                 <select
                   className="bg-transparent text-sm font-semibold focus:outline-none p-1.5"
                   value={statusFilter}
                   onChange={(e) => setStatusFilter(e.target.value as any)}
                 >
-                  <option value="all">All Status</option>
-                  <option value="active">Active</option>
-                  <option value="blocked">Blocked</option>
+                  <option className="text-indigo-500" value="all">
+                    All Status
+                  </option>
+                  <option className="text-indigo-500" value="active">
+                    Active
+                  </option>
+                  <option className="text-indigo-500" value="blocked">
+                    Blocked
+                  </option>
                 </select>
               </div>
-              <div className="flex items-center gap-2 bg-slate-50 p-1 rounded-xl border border-slate-100">
+              <div className="flex items-center gap-2 bg-indigo-500 p-1 rounded-xl border border-slate-100">
                 <Shield size={14} className="ml-2 text-slate-400" />
                 <select
                   className="bg-transparent text-sm font-semibold focus:outline-none p-1.5"
                   value={roleFilter}
                   onChange={(e) => setRoleFilter(e.target.value)}
                 >
-                  <option value="all">All Roles</option>
-                  <option value="ADMIN">Admin</option>
-                  <option value="DRIVER">Driver</option>
-                  <option value="RIDER">Rider</option>
+                  <option className="text-indigo-400" value="all">
+                    All Roles
+                  </option>
+                  <option className="text-indigo-400" value="ADMIN">
+                    Admin
+                  </option>
+                  <option className="text-indigo-400" value="DRIVER">
+                    Driver
+                  </option>
+                  <option className="text-indigo-500" value="RIDER">
+                    Rider
+                  </option>
                 </select>
               </div>
             </div>

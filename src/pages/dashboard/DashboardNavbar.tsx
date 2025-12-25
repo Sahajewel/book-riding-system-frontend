@@ -1,12 +1,5 @@
-import {
-  Bell,
-  Search,
-  User,
-  LogOut,
-  Settings,
-  Menu,
-  Loader2,
-} from "lucide-react";
+/* eslint-disable @typescript-eslint/no-unused-vars */
+import { Bell, User, LogOut, Settings, Loader2, Calendar } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -23,22 +16,29 @@ import {
 import { useAppDispatch } from "@/redux/hook";
 import { toast } from "sonner";
 import { Link, useNavigate } from "react-router";
+import { ModeToggle } from "@/provider/Mode.toggle";
 
 const DashboardNavbar = () => {
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
 
-  // 🛰️ ডাইনামিক ইউজার ডাটা ফেচিং
   const { data: userInfo, isLoading } = useUserInfoQuery(undefined);
   const [logout] = useLogoutMutation();
 
   const user = userInfo?.data;
 
-  // 🚪 লগআউট হ্যান্ডলার
+  // বর্তমান তারিখ ফরম্যাট করা
+  const today = new Date().toLocaleDateString("en-US", {
+    weekday: "long",
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+  });
+
   const handleLogout = async () => {
     try {
       await logout(undefined).unwrap();
-      dispatch(authApi.util.resetApiState()); // ক্লিনআপ স্টেট
+      dispatch(authApi.util.resetApiState());
       toast.success("Logged out successfully");
       navigate("/");
     } catch (error) {
@@ -48,33 +48,41 @@ const DashboardNavbar = () => {
 
   return (
     <nav className="h-20 bg-white/80 dark:bg-neutral-900/80 backdrop-blur-md border-b border-slate-100 dark:border-neutral-800 sticky top-0 z-40 px-6 flex items-center justify-between">
-      {/* 🔍 Search Bar (Left) */}
-      <div className="hidden md:flex items-center gap-3 bg-slate-50 dark:bg-neutral-800 px-4 py-2.5 rounded-2xl border border-slate-100 dark:border-neutral-700 w-96 focus-within:ring-2 focus-within:ring-indigo-500/20 transition-all">
-        <Search className="h-4 w-4 text-slate-400" />
-        <input
-          type="text"
-          placeholder="Search rides or analytics..."
-          className="bg-transparent border-none text-sm font-medium focus:outline-none w-full text-slate-600 dark:text-neutral-300"
-        />
+      <div className="hidden md:block">
+        <h1 className="text-xl font-black text-slate-800 dark:text-white flex items-center gap-2">
+          Hello, {user?.name?.split(" ")[0] || "Guest"}!{" "}
+          <span className="animate-bounce">👋</span>
+        </h1>
+        <p className="text-xs font-medium text-slate-500 flex items-center gap-1.5 mt-0.5">
+          <Calendar size={12} className="text-indigo-500" /> {today}
+        </p>
       </div>
 
-      {/* Mobile Menu Icon */}
+      {/* মোবাইল ডিভাইসে লোগো বা ছোট নাম দেখাতে পারিস */}
       <div className="md:hidden">
-        <Menu className="h-6 w-6 text-slate-600" />
+        <span className="font-black text-indigo-600 text-xl tracking-tighter">
+          RideX
+        </span>
       </div>
 
       {/* 🔔 Right Side Actions */}
       <div className="flex items-center gap-4">
-        {/* Notifications */}
+        <Link
+          className="outline px-3 py-2 rounded-2xl bg-indigo-600 text-white font-bold"
+          to="/"
+        >
+          Home
+        </Link>
+        <ModeToggle></ModeToggle>
+        {/* Notifications
         <button className="relative p-2.5 bg-slate-50 dark:bg-neutral-800 rounded-xl hover:bg-slate-100 dark:hover:bg-neutral-700 transition-colors group border border-slate-100 dark:border-neutral-700">
           <Bell className="h-5 w-5 text-slate-500 group-hover:text-indigo-600" />
           <span className="absolute top-2.5 right-2.5 h-2 w-2 bg-rose-500 rounded-full border-2 border-white dark:border-neutral-800"></span>
-        </button>
+        </button> */}
 
         {/* 👤 User Profile Dropdown */}
         <DropdownMenu>
           <DropdownMenuTrigger className="flex items-center gap-3 p-1.5 pr-4 bg-slate-50 dark:bg-neutral-800 rounded-2xl border border-slate-100 dark:border-neutral-700 hover:border-indigo-200 dark:hover:border-indigo-900 transition-all outline-none">
-            {/* Avatar Logic */}
             <div className="h-9 w-9 bg-indigo-600 rounded-xl flex items-center justify-center text-white font-black shadow-lg shadow-indigo-200 dark:shadow-none">
               {isLoading ? (
                 <Loader2 size={18} className="animate-spin" />
@@ -83,7 +91,7 @@ const DashboardNavbar = () => {
               )}
             </div>
 
-            <div className="hidden md:block text-left">
+            <div className="hidden sm:block text-left">
               <p className="text-[9px] font-black uppercase text-indigo-500 dark:text-indigo-400 leading-none mb-1 tracking-widest">
                 {user?.role || "Guest"}
               </p>
